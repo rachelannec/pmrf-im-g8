@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="hero">
+    <h1>Simple Flask Form</h1>
+    <p>Submit the form to save data in SQLite and display saved entries below.</p>
+  </div>
+
+  <div class="card">
+    {% if message %}
+      <div class="flash">{{ message }}</div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for item in messages %}
+          <div class="flash">{{ item }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <label>
+        Name
+        <input type="text" name="name" value="{{ form.name }}" required>
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" value="{{ form.email }}" required>
+      </label>
+      <label>
+        Message
+        <textarea name="message" required>{{ form.message }}</textarea>
+      </label>
+      <button type="submit">Save to SQLite</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Saved Entries</h2>
+    <div class="entries">
+      {% if entries %}
+        {% for entry in entries %}
+          <div class="entry">
+            <h3>{{ entry["name"] }}</h3>
+            <div class="meta">{{ entry["email"] }} · {{ entry["created_at"] }}</div>
+            <div>{{ entry["message"] }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty">No entries yet.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

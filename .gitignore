@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask-specific
+instance/
+.webassets-cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables (Crucial for API keys)
+.env
+.flaskenv
+*.env
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Unit test / coverage reports
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
