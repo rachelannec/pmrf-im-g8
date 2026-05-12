@@ -1,0 +1,178 @@
+/* PhilHealth form specific styles */
+
+.phil-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.phil-grid label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pin-box {
+  width: 28px;
+  height: 34px;
+  text-align: center;
+  font-weight: 700;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.pin-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.name-part {
+  width: 100%;
+}
+
+.small {
+  font-size: 0.9rem;
+}
+
+.dependent-row input {
+  width: 100%;
+}
+
+/* Grid and layout classes */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+.col-span-6 { grid-column: span 6; }
+.col-span-8 { grid-column: span 8; }
+.col-span-12 { grid-column: span 12; }
+
+/* Label styling */
+.form-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Flexbox utilities */
+.flex {
+  display: flex;
+}
+
+.flex-gap-2 {
+  gap: 0.5rem;
+}
+
+.items-center {
+  align-items: center;
+}
+
+/* Input base styling */
+.form-input,
+.form-input-base {
+  width: 100%;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  padding: 8px 8px;
+  font: inherit;
+  background: #fff;
+}
+
+/* PIN box styling */
+.pin-box {
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  font-weight: 700;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.pin-boxes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Name fields grid */
+.name-inputs {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 0.75rem;
+}
+
+.name-inputs input {
+  width: 100%;
+}
+
+/* Birth date inputs */
+.date-inputs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.date-inputs input {
+  text-align: center;
+  padding: 0.25rem;
+}
+
+.date-mm, .date-dd {
+  width: 48px;
+  height: 32px;
+}
+
+.date-yyyy {
+  width: 80px;
+}
+
+/* Dependent row */
+.boxed {
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.dependent-row {
+  display: grid;
+  grid-template-columns: 3fr 1fr 2fr 1fr 80px 40px;
+  gap: 8px;
+  padding: 8px 0;
+  align-items: center;
+}
+
+.dependent-row input,
+.dependent-row select {
+  margin: 0;
+  padding: 8px;
+}
+
+.dependent-birth-inputs {
+  display: flex;
+  gap: 6px;
+}
+
+.dependent-birth-inputs input {
+  margin: 0;
+}
+
+.dependent-birth-yyyy {
+  width: 80px !important;
+}
+
+/* Button spacing */
+.add-dependent-btn {
+  margin-top: 8px;
+}
+
+.submit-section {
+  margin-top: 18px;
+}

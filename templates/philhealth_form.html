@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="hero">
+    <h1>PhilHealth Membership — Registration / Update</h1>
+    <p>Fill the form below to create a registrant and their dependents.</p>
+  </div>
+
+  <div class="card">
+    <div id="messages"></div>
+    <form id="phil-form">
+      <h3>Registrant Details</h3>
+
+      <div class="form-grid">
+        <div class="col-span-12">
+          <label class="form-label">PIN</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="pin" placeholder="PIN" name="PIN" class="form-input" readonly>
+            <button type="button" id="regen-pin" style="padding:6px 10px;border-radius:6px;border:1px solid #bfc9d6;background:#fff;cursor:pointer;">Regenerate</button>
+          </div>
+        </div>
+
+        <div class="col-span-12">
+          <label class="form-label">Member Name</label>
+          <div class="name-inputs">
+            <input id="last_name" class="form-input-base" placeholder="Last name">
+            <input id="first_name" class="form-input-base" placeholder="First name">
+            <input id="middle_name" class="form-input-base" placeholder="Middle name">
+          </div>
+          <input type="hidden" name="MemberName">
+        </div>
+
+        <div class="col-span-6">
+          <label class="form-label">Mother Maiden Name</label>
+          <input name="MotherMaidenName" required class="form-input">
+        </div>
+        <div class="col-span-6">
+          <label class="form-label">Spouse Name (if married)</label>
+          <input name="SpouseName" class="form-input">
+        </div>
+
+        <div class="col-span-5">
+          <label class="form-label">Birth Date</label>
+          <div class="date-inputs">
+            <input class="date-mm" maxlength="2" id="b_mm" placeholder="MM">
+            <input class="date-dd" maxlength="2" id="b_dd" placeholder="DD">
+            <input class="date-yyyy" maxlength="4" id="b_yyyy" placeholder="YYYY">
+          </div>
+          <input type="hidden" name="BirthDate">
+        </div>
+
+        <div class="col-span-8">
+          <label class="form-label">Birth Place</label>
+          <input name="BirthPlace" required class="form-input">
+        </div>
+
+        <div class="col-span-3">
+          <label class="form-label">Sex</label>
+          <select name="Sex" required class="form-input">
+            <option value="" disabled selected>Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        
+        <div class="col-span-6">
+          <label class="form-label">Civil Status</label>
+          <select name="CivilStatus" required class="form-input">
+            <option value="" disabled selected>Select Civil Status</option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Legally Separated">Legally Separated</option>
+            <option value="Annulled">Annulled</option>
+            <option value="Widow/er">Widow/er</option>
+          </select>
+        </div>
+        
+        <div class="col-span-6">
+          <label class="form-label">Citizenship</label>
+          <select name="Citizenship" required class="form-input">
+            <option value="" disabled selected>Select Citizenship</option>
+            <option value="Filipino">Filipino</option>
+            <option value="Dual Citizen">Dual Citizen</option>
+            <option value="Foreign National">Foreign National</option>
+          </select>
+        </div>
+
+        <div class="col-span-4">
+          <label class="form-label">PhilSys ID</label>
+          <input name="PhilSysID" class="form-input">
+        </div>
+        <div class="col-span-4">
+          <label class="form-label">TIN</label>
+          <input name="TIN" class="form-input">
+        </div>
+        <div class="col-span-4">
+          <label class="form-label">Email Address</label>
+          <input name="EmailAddress" type="email" required class="form-input">
+        </div>
+
+        <div class="col-span-12">
+          <label class="form-label">Permanent Address</label>
+          <input name="PermanentAddress" required class="form-input">
+        </div>
+        <div class="col-span-12">
+          <label class="form-label">Mailing Address</label>
+          <input name="MailingAddress" required class="form-input">
+        </div>
+
+        <div class="col-span-4">
+          <label class="form-label">Home Phone</label>
+          <input name="HomePhone" class="form-input">
+        </div>
+        <div class="col-span-4">
+          <label class="form-label">Mobile Phone</label>
+          <input name="MobilePhone" required class="form-input">
+        </div>
+        <div class="col-span-4">
+          <label class="form-label">Business Line</label>
+          <input name="BusinessLine" class="form-input">
+        </div>
+
+        <div class="col-span-12">
+          <label class="form-label">Member Type</label>
+          <select id="membertype-select" name="MemberTypeID" required class="form-input"></select>
+        </div>
+
+      </div>
+
+      <h3>Dependents (optional)</h3>
+      <div id="dependents-container" class="boxed"></div>
+      <div class="add-dependent-btn"><button type="button" id="add-dependent">Add dependent</button></div>
+
+      <div class="submit-section"><button type="submit">Submit Registration</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Quick Actions</h2>
+    <p>You can manage member types from the API. Use the demo endpoints if you need to seed types.</p>
+  </div>
+
+  <script>
+  // helper to create dependent row (styled for the phil form)
+  function createDependentRow(){
+    const div = document.createElement('div');
+    div.className = 'dependent-row';
+    div.innerHTML = `
+      <input name="DependentName" placeholder="Last, First" required>
+      <select name="Relationship" required>
+        <option value="" disabled selected>Relation</option>
+        <option value="Spouse">Spouse</option>
+        <option value="Child">Child</option>
+        <option value="Foster Child">Foster Child</option>
+        <option value="Parent">Parent</option>
+      </select>
+      <div class="dependent-birth-inputs"><input maxlength="2" name="db_mm" class="pin-box" placeholder="MM"><input maxlength="2" name="db_dd" class="pin-box" placeholder="DD"><input maxlength="4" name="db_yyyy" class="dependent-birth-yyyy" placeholder="YYYY"></div>
+      <select name="DependentCitizenship" required>
+        <option value="" disabled selected>Citizenship</option>
+        <option value="Filipino">Filipino</option>
+        <option value="Dual Citizen">Dual Citizen</option>
+        <option value="Foreign National">Foreign National</option>
+      </select>
+      <select name="DependentPWD"><option value="No">No</option><option value="Yes">Yes</option></select>
+      <button type="button" class="remove-dependent">×</button>
+    `;
+    div.querySelector('.remove-dependent').addEventListener('click', ()=> div.remove());
+    return div;
+  }
+
+  document.getElementById('add-dependent').addEventListener('click', ()=>{
+    document.getElementById('dependents-container').appendChild(createDependentRow());
+  });
+
+  async function loadMemberTypes() {
+  const sel = document.getElementById('membertype-select');
+  sel.innerHTML = '<option value="">Loading...</option>';
+
+  try {
+    const res = await fetch('/membertypes');
+    
+    if (!res.ok) {
+      throw new Error(`Server responded with ${res.status}`);
+    }
+
+    const j = await res.json();
+    console.log('Member types response:', j);
+
+    sel.innerHTML = '<option value="" disabled selected>Select Member Type</option>';
+
+    // Fix: Handle both object wrappers {membertypes: []} and direct arrays []
+    const data = Array.isArray(j) ? j : j.membertypes;
+
+    if (data && data.length > 0) {
+      data.forEach(mt => {
+        const o = document.createElement('option');
+        o.value = mt.MemberTypeID;
+        // This matches the columns seen in image_fdb238.png
+        o.textContent = `${mt.MemberTypeID} — ${mt.MemberType}`;
+        sel.appendChild(o);
+      });
+    } else {
+      sel.innerHTML = '<option value="">(no types defined)</option>';
+    }
+  } catch (e) {
+    console.error('Error loading member types:', e);
+    sel.innerHTML = '<option value="">(error: check console)</option>';
+  }
+}
+
+  function collectPIN(){
+    // Use the generated/read-only PIN input value
+    const pinInput = document.getElementById('pin');
+    const target = document.querySelector('input[name="PIN"]');
+    if(target && pinInput) target.value = pinInput.value || '';
+  }
+
+  // Generate a random PIN in the form XX-XXXXXXXX-X (digits only for X)
+  function randomPIN(){
+    const randDigits = (n) => Array.from({length:n}, ()=> Math.floor(Math.random()*10)).join('');
+    return `${randDigits(2)}-${randDigits(8)}-${randDigits(1)}`;
+  }
+
+  // Try to generate a PIN that is not yet present in the DB by checking /registrants
+  async function generateUniquePIN(maxAttempts=20){
+    try{
+      const res = await fetch('/registrants');
+      if(!res.ok) throw new Error('Failed to fetch registrants');
+      const j = await res.json();
+      const existing = new Set((j.registrants||[]).map(r => r.PIN));
+      for(let i=0;i<maxAttempts;i++){
+        const p = randomPIN();
+        if(!existing.has(p)){
+          document.getElementById('pin').value = p;
+          return p;
+        }
+      }
+      // fallback
+      const fallback = randomPIN();
+      document.getElementById('pin').value = fallback;
+      return fallback;
+    }catch(e){
+      console.error('generateUniquePIN error', e);
+      const p = randomPIN();
+      document.getElementById('pin').value = p;
+      return p;
+    }
+  }
+
+  function collectBirth(){
+    const mm = document.getElementById('b_mm').value.padStart(2,'0');
+    const dd = document.getElementById('b_dd').value.padStart(2,'0');
+    const yyyy = document.getElementById('b_yyyy').value;
+    const birthDateInput = document.querySelector('input[name="BirthDate"]');
+    if (birthDateInput) birthDateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  function collectMemberName(){
+    const last = document.getElementById('last_name').value.trim();
+    const first = document.getElementById('first_name').value.trim();
+    const middle = document.getElementById('middle_name').value.trim();
+    const combined = `${last}, ${first}${middle? ' ' + middle : ''}`.trim();
+    const memberNameInput = document.querySelector('input[name="MemberName"]');
+    if (memberNameInput) memberNameInput.value = combined;
+  }
+
+  document.getElementById('phil-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const msg = document.getElementById('messages'); msg.innerHTML='';
+    collectBirth(); collectMemberName();
+
+    const form = e.target;
+    const data = Object.fromEntries(new FormData(form));
+
+    // collect dependents
+    const dependents = [];
+    document.querySelectorAll('.dependent-row').forEach(row => {
+      // Need a mini form-data grabber specifically for the dynamically created inputs inside this div
+      // Because FormData(form) grabs everything, but we want to group dependents correctly.
+      const nameNode = row.querySelector('[name="DependentName"]');
+      const relNode = row.querySelector('[name="Relationship"]');
+      const ctzNode = row.querySelector('[name="DependentCitizenship"]');
+      const pwdNode = row.querySelector('[name="DependentPWD"]');
+      const mmNode = row.querySelector('[name="db_mm"]');
+      const ddNode = row.querySelector('[name="db_dd"]');
+      const yyyyNode = row.querySelector('[name="db_yyyy"]');
+
+      const yyyy = yyyyNode ? yyyyNode.value : '';
+      const mm = mmNode ? (mmNode.value || '').padStart(2,'0') : '';
+      const ddv = ddNode ? (ddNode.value || '').padStart(2,'0') : '';
+      const bdate = yyyy && mm && ddv ? `${yyyy}-${mm}-${ddv}` : '';
+
+      dependents.push({
+        PIN: data.PIN,
+        DependentName: nameNode ? nameNode.value : '',
+        Relationship: relNode ? relNode.value : '',
+        DependentBirthDate: bdate,
+        DependentCitizenship: ctzNode ? ctzNode.value : '',
+        DependentPWD: pwdNode ? pwdNode.value : 'No'
+      });
+    });
+
+    try{
+      const r = await fetch('/registrants', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+      const jr = await r.json();
+      if(!r.ok){ msg.innerHTML = `<div class="flash">${jr.message||JSON.stringify(jr)}</div>`; return }
+
+      // post dependents sequentially
+      for(const d of dependents){
+        await fetch('/dependents', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(d)});
+      }
+
+      msg.innerHTML = `<div class="flash">${jr.message || 'Saved'}</div>`;
+      form.reset(); document.getElementById('dependents-container').innerHTML='';
+    }catch(err){ msg.innerHTML = `<div class="flash">Network error</div>` }
+  });
+
+  loadMemberTypes();
+  // generate a unique PIN on load and wire regenerate button
+  generateUniquePIN();
+  const regenBtn = document.getElementById('regen-pin');
+  if(regenBtn) regenBtn.addEventListener('click', generateUniquePIN);
+  </script>
+
+{% endblock %}
