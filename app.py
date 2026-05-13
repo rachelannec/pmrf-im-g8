@@ -1,5 +1,6 @@
 # pip install -r requirements.txt
 from pathlib import Path
+import random
 import sqlite3
 
 from flask import Flask, flash, redirect, render_template, request, url_for, jsonify
@@ -76,6 +77,17 @@ def init_db():
 		connection.commit()
 
 
+def generate_pin(connection):
+	while True:
+		pin = f"PH-{random.randint(0, 999_999_999):09d}-{random.randint(0, 9)}"
+		row = connection.execute(
+			"SELECT 1 FROM registrant_details WHERE PIN = ?",
+			(pin,),
+		).fetchone()
+		if row is None:
+			return pin
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 	# Render the PhilHealth membership form. The form submits to the JSON API endpoints
@@ -101,8 +113,8 @@ def registrants():
 		sex = (payload.get("Sex") or payload.get("sex") or "").strip()
 		civil = (payload.get("CivilStatus") or payload.get("civilstatus") or "").strip()
 		citizenship = (payload.get("Citizenship") or payload.get("citizenship") or "").strip()
-		philsys = (payload.get("PhilSysID") or payload.get("philsysid") or "").strip()
-		tin = (payload.get("TIN") or payload.get("tin") or "").strip()
+		philsys = (payload.get("PhilSysID") or payload.get("philsysid") or "").strip()  or None
+		tin = (payload.get("TIN") or payload.get("tin") or "").strip() or None
 		perm_addr = (payload.get("PermanentAddress") or payload.get("permanentaddress") or "").strip()
 		mail_addr = (payload.get("MailingAddress") or payload.get("mailingaddress") or "").strip()
 		home = (payload.get("HomePhone") or payload.get("homephone") or "").strip()
@@ -111,12 +123,16 @@ def registrants():
 		email = (payload.get("EmailAddress") or payload.get("emailaddress") or "").strip()
 		mtype = (payload.get("MemberTypeID") or payload.get("membertypeid") or "").strip()
 
-		required = [pin, member_name, mother, birthdate, birthplace, sex, civil, citizenship, perm_addr, mail_addr, mobile, email, mtype]
+		required = [member_name, birthdate, birthplace, sex, civil, citizenship, perm_addr, mail_addr, mobile, email, mtype]
 		if not all(required):
 			return jsonify({"ok": False, "message": "Missing required fields"}), 400
 
 		try:
 			with get_db_connection() as conn:
+				if not pin:
+					pin = generate_pin(conn)
+				if not mother:
+					mother = "N/A"
 				conn.execute(
 					"""
 					INSERT INTO registrant_details (
@@ -135,7 +151,7 @@ def registrants():
 		except sqlite3.IntegrityError as e:
 			return jsonify({"ok": False, "message": str(e)}), 400
 
-		return jsonify({"ok": True, "message": "Registrant saved."}), 201
+		return jsonify({"ok": True, "message": "Registrant saved.", "PIN": pin}), 201
 
 	# GET: return all registrants as JSON
 	with get_db_connection() as conn:
