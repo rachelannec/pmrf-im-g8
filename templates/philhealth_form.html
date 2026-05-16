@@ -1,213 +1,334 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <!-- Progress Stepper -->
 <div class="stepper">
-    <div class="step active">
-        <div class="step-icon"><span class="material-symbols-outlined">edit_note</span></div>
-        <span>Form Entry</span>
+  <div class="step active">
+    <div class="step-icon">
+      <span class="material-symbols-outlined">edit_note</span>
     </div>
-    <div class="step-line"></div>
-    <div class="step">
-        <div class="step-icon"><span class="material-symbols-outlined">visibility</span></div>
-        <span>Review</span>
+    <span>Form Entry</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-icon">
+      <span class="material-symbols-outlined">visibility</span>
     </div>
-    <div class="step-line"></div>
-    <div class="step">
-        <div class="step-icon"><span class="material-symbols-outlined">check_circle</span></div>
-        <span>Complete</span>
+    <span>Review</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-icon">
+      <span class="material-symbols-outlined">check_circle</span>
     </div>
+    <span>Complete</span>
+  </div>
 </div>
 
 <div class="form-card">
-    <div class="form-header">
-        <h1>Member Registration (PMRF)</h1>
-        <p>Please fill out all required fields carefully to ensure your registration is processed correctly. Required fields are marked with an asterisk (*).</p>
+  <div class="form-header">
+    <h1>Member Registration (PMRF)</h1>
+    <p>
+      Please fill out all required fields carefully to ensure your registration
+      is processed correctly. Required fields are marked with an asterisk (*).
+    </p>
+  </div>
+
+  <div id="messages"></div>
+
+  <form id="phil-form">
+    <input type="hidden" name="MemberName" />
+
+    <!-- I. Personal Details -->
+    <h2 class="section-title">I. Personal Details</h2>
+    <div class="grid">
+      <div class="col-4 form-group">
+        <label>PhilHealth ID Number (PIN)</label>
+        <input
+          type="text"
+          name="PIN"
+          id="pin"
+          class="form-control"
+          readonly
+          placeholder="Auto-generated on save"
+        />
+        <span class="help-text">Leave blank if for new registration.</span>
+      </div>
+      <div class="col-12">
+        <hr
+          style="
+            border: 0;
+            border-top: 1px solid var(--border-light);
+            margin: 8px 0;
+          "
+        />
+      </div>
+
+      <div class="col-3 form-group">
+        <label>Last Name *</label>
+        <input type="text" id="last_name" class="form-control" required />
+      </div>
+      <div class="col-3 form-group">
+        <label>First Name *</label>
+        <input type="text" id="first_name" class="form-control" required />
+      </div>
+      <div class="col-3 form-group">
+        <label>Middle Name</label>
+        <input type="text" id="middle_name" class="form-control" />
+      </div>
+      <div class="col-1 form-group">
+        <label>Suffix</label>
+        <input
+          type="text"
+          class="form-control"
+          style="text-align: center"
+          placeholder="Jr/Sr"
+        />
+      </div>
+      <div class="col-2"></div>
+      <!-- Spacer -->
+
+      <div class="col-5 form-group">
+        <label>Mother's Maiden Name *</label>
+        <input
+          type="text"
+          name="MotherMaidenName"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="col-3 form-group">
+        <label>Birth Date *</label>
+        <input
+          type="date"
+          id="birth_date"
+          name="BirthDate"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="col-4 form-group">
+        <label>Birth Place *</label>
+        <input
+          type="text"
+          id="birth_place"
+          name="BirthPlace"
+          class="form-control"
+          placeholder="Municipality/City/Province"
+          required
+        />
+      </div>
+
+      <div class="col-3 form-group">
+        <label>Sex *</label>
+        <div class="radio-group">
+          <label class="radio-label"
+            ><input type="radio" name="Sex" value="Male" required /> Male</label
+          >
+          <label class="radio-label"
+            ><input type="radio" name="Sex" value="Female" required />
+            Female</label
+          >
+        </div>
+      </div>
+      <div class="col-3 form-group">
+        <label>Civil Status *</label>
+        <select name="CivilStatus" class="form-control" required>
+          <option value="Single">Single</option>
+          <option value="Married">Married</option>
+          <option value="Widow/er">Widowed</option>
+          <option value="Annulled">Annulled</option>
+          <option value="Legally Separated">Legally Separated</option>
+        </select>
+      </div>
+      <div class="col-2 form-group">
+        <label>Citizenship *</label>
+        <select name="Citizenship" class="form-control" required>
+          <option value="Filipino">Filipino</option>
+          <option value="Foreign National">Foreign National</option>
+          <option value="Dual Citizen">Dual Citizen</option>
+        </select>
+      </div>
+      <div class="col-2 form-group">
+        <label>PhilSys ID Number</label>
+        <input
+          type="text"
+          name="PhilSysID"
+          id="philsys_id"
+          class="form-control"
+          placeholder="XXXX-XXXX-XXXX-XXXX"
+          maxlength="19"
+        />
+      </div>
+      <div class="col-2 form-group">
+        <label>TIN (Optional)</label>
+        <input
+          type="text"
+          name="TIN"
+          id="tin_id"
+          class="form-control"
+          placeholder="XXX-XXX-XXX-XXX"
+          maxlength="15"
+        />
+      </div>
     </div>
 
-    <div id="messages"></div>
+    <!-- II. Address & Contact Details -->
+    <h2 class="section-title">II. Address & Contact Details</h2>
+    <div class="grid">
+      <div
+        class="col-6"
+        style="display: flex; flex-direction: column; gap: 16px"
+      >
+        <div class="form-group">
+          <label>Permanent Home Address *</label>
+          <textarea
+            name="PermanentAddress"
+            class="form-control"
+            rows="3"
+            placeholder="Unit/Floor, Building, Street, Brgy, City/Municipality, Province, Zip Code"
+            required
+          ></textarea>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="same_address" /> Mailing address same as
+          above
+        </label>
+        <div class="form-group">
+          <label>Mailing Address</label>
+          <textarea
+            name="MailingAddress"
+            id="mailing_address"
+            class="form-control"
+            rows="3"
+            placeholder="If different from permanent address"
+          ></textarea>
+        </div>
+      </div>
 
-    <form id="phil-form">
-        <input type="hidden" name="MemberName">
-        
-        <!-- I. Personal Details -->
-        <h2 class="section-title">I. Personal Details</h2>
-        <div class="grid">
-            <div class="col-4 form-group">
-                <label>PhilHealth ID Number (PIN)</label>
-                <input type="text" name="PIN" id="pin" class="form-control" readonly placeholder="Auto-generated on save">
-                <span class="help-text">Leave blank if for new registration.</span>
-            </div>
-            <div class="col-12"><hr style="border:0; border-top: 1px solid var(--border-light); margin: 8px 0;"></div>
-
-            <div class="col-3 form-group">
-                <label>Last Name *</label>
-                <input type="text" id="last_name" class="form-control" required>
-            </div>
-            <div class="col-3 form-group">
-                <label>First Name *</label>
-                <input type="text" id="first_name" class="form-control" required>
-            </div>
-            <div class="col-3 form-group">
-                <label>Middle Name</label>
-                <input type="text" id="middle_name" class="form-control">
-            </div>
-            <div class="col-1 form-group">
-                <label>Suffix</label>
-                <input type="text" class="form-control" style="text-align: center;" placeholder="Jr/Sr">
-            </div>
-            <div class="col-2"></div> <!-- Spacer -->
-
-            <div class="col-5 form-group">
-                <label>Mother's Maiden Name *</label>
-                <input type="text" name="MotherMaidenName" class="form-control" required>
-            </div>
-            <div class="col-3 form-group">
-                <label>Birth Date *</label>
-                <input type="date" name="BirthDate" class="form-control" required>
-            </div>
-            <div class="col-4 form-group">
-                <label>Birth Place *</label>
-                <input type="text" name="BirthPlace" class="form-control" placeholder="Municipality/City/Province" required>
-            </div>
-
-            <div class="col-3 form-group">
-                <label>Sex *</label>
-                <div class="radio-group">
-                    <label class="radio-label"><input type="radio" name="Sex" value="Male" required> Male</label>
-                    <label class="radio-label"><input type="radio" name="Sex" value="Female" required> Female</label>
-                </div>
-            </div>
-            <div class="col-3 form-group">
-                <label>Civil Status *</label>
-                <select name="CivilStatus" class="form-control" required>
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                    <option value="Widow/er">Widowed</option>
-                    <option value="Annulled">Annulled</option>
-                    <option value="Legally Separated">Legally Separated</option>
-                </select>
-            </div>
-            <div class="col-2 form-group">
-                <label>Citizenship *</label>
-                <select name="Citizenship" class="form-control" required>
-                    <option value="Filipino">Filipino</option>
-                    <option value="Foreign National">Foreign National</option>
-                    <option value="Dual Citizen">Dual Citizen</option>
-                </select>
-            </div>
-            <div class="col-2 form-group">
-                <label>PhilSys ID Number</label>
-                <input type="text" name="PhilSysID" class="form-control">
-            </div>
-            <div class="col-2 form-group">
-                <label>TIN (Optional)</label>
-                <input type="text" name="TIN" class="form-control">
-            </div>
+      <div class="col-6 contact-panel grid">
+        <div class="col-12 form-group">
+          <label>Mobile Number *</label>
+          <input
+            type="tel"
+            name="MobilePhone"
+            id="mobile_phone"
+            class="form-control"
+            placeholder="+63-9XX-XXX-XXXX"
+            maxlength="16"
+            required
+          />
+        </div>
+        <div class="col-6 form-group">
+          <label>Home Phone</label>
+          <input
+            type="tel"
+            name="HomePhone"
+            id="home_phone"
+            class="form-control"
+            placeholder="Landline or Mobile"
+          />
+          <label class="checkbox-label" style="margin-top: 8px">
+            <input type="checkbox" id="same_as_mobile" /> Same as mobile number
+          </label>
         </div>
 
-        <!-- II. Address & Contact Details -->
-        <h2 class="section-title">II. Address & Contact Details</h2>
-        <div class="grid">
-            <div class="col-6" style="display: flex; flex-direction: column; gap: 16px;">
-                <div class="form-group">
-                    <label>Permanent Home Address *</label>
-                    <textarea name="PermanentAddress" class="form-control" rows="3" placeholder="Unit/Floor, Building, Street, Brgy, City/Municipality, Province, Zip Code" required></textarea>
-                </div>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="same_address"> Mailing address same as above
-                </label>
-                <div class="form-group">
-                    <label>Mailing Address</label>
-                    <textarea name="MailingAddress" id="mailing_address" class="form-control" rows="3" placeholder="If different from permanent address"></textarea>
-                </div>
-            </div>
-
-            <div class="col-6 contact-panel grid">
-                <div class="col-12 form-group">
-                    <label>Mobile Number *</label>
-                    <div style="display: flex;">
-                        <span style="background: var(--surface); border: 1px solid var(--border); border-right: none; border-radius: 8px 0 0 8px; padding: 0 16px; display: flex; align-items: center; color: var(--text-muted);">+63</span>
-                        <input type="tel" name="MobilePhone" class="form-control" style="border-radius: 0 8px 8px 0;" required>
-                    </div>
-                </div>
-                <div class="col-6 form-group">
-                    <label>Home Phone</label>
-                    <input type="tel" name="HomePhone" class="form-control">
-                </div>
-                <div class="col-6 form-group">
-                    <label>Business Line</label>
-                    <input type="tel" name="BusinessLine" class="form-control">
-                </div>
-                <div class="col-12 form-group">
-                    <label>E-mail Address * (Required for OFW)</label>
-                    <input type="email" name="EmailAddress" class="form-control" placeholder="example@email.com" required>
-                </div>
-            </div>
+        <div class="col-6 form-group">
+          <label>Business Line</label>
+          <input type="tel" name="BusinessLine" class="form-control" />
         </div>
-
-        <!-- III. Declaration of Dependents -->
-		<h2 class="section-title">
-			III. Declaration of Dependents
-			<button type="button" id="add-dependent" class="btn-add"><span class="material-symbols-outlined">add_circle</span> Add Row</button>
-		</h2>
-		<div class="table-container">
-			<table>
-				<thead>
-					<tr>
-						<th>NAME (Last, First, Middle)</th>
-						<th>RELATIONSHIP</th>
-						<th>BIRTH DATE</th>
-						<th>CITIZENSHIP</th>
-						<th>WITH PWD?</th>
-						<th style="text-align: center;">ACTION</th>
-					</tr>
-				</thead>
-				<tbody id="dependents-container">
-					<!-- JS injects here -->
-				</tbody>
-				<tbody>
-					<tr>
-						<td colspan="6" style="text-align: center; color: var(--text-muted); font-size: 12px; background: var(--surface);">
-							List your qualified legal dependents here. Attach additional sheets if necessary.
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-        <!-- IV. Member Type -->
-        <h2 class="section-title">IV. Member Type</h2>
-        <div class="grid">
-            <div class="col-6 member-type-box direct">
-                <div class="box-title">Direct Contributor</div>
-                <div id="direct-contributors"></div>
-            </div>
-            <div class="col-6 member-type-box indirect">
-                <div class="box-title">Indirect Contributor</div>
-                <div id="indirect-contributors"></div>
-            </div>
+        <div class="col-12 form-group">
+          <label>E-mail Address * (Required for OFW)</label>
+          <input
+            type="email"
+            name="EmailAddress"
+            class="form-control"
+            placeholder="example@email.com"
+            required
+          />
         </div>
+      </div>
+    </div>
 
-        <!-- Footer Callout -->
-        <div class="consent-box">
-            <span class="material-symbols-outlined">info</span>
-            <p>I hereby certify that the information provided above is true and correct to the best of my knowledge and that my signature below serves as my consent to the processing of my personal data in accordance with the Data Privacy Act of 2012.</p>
-        </div>
+    <!-- III. Declaration of Dependents -->
+    <h2 class="section-title">
+      III. Declaration of Dependents
+      <button type="button" id="add-dependent" class="btn-add">
+        <span class="material-symbols-outlined">add_circle</span> Add Row
+      </button>
+    </h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>NAME (Last, First, Middle)</th>
+            <th>RELATIONSHIP</th>
+            <th>BIRTH DATE</th>
+            <th>CITIZENSHIP</th>
+            <th>WITH PWD?</th>
+            <th style="text-align: center">ACTION</th>
+          </tr>
+        </thead>
+        <tbody id="dependents-container">
+          <!-- JS injects here -->
+        </tbody>
+        <tbody>
+          <tr>
+            <td
+              colspan="6"
+              style="
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 12px;
+                background: var(--surface);
+              "
+            >
+              List your qualified legal dependents here. Attach additional
+              sheets if necessary.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <!-- Submit Section -->
-        <div class="form-actions">
-            <div class="security-badge">
-                <span class="material-symbols-outlined">security</span>
-                Secure submission encrypted by PhilHealth Infrastructure
-            </div>
-            <div class="button-group">
-                <button type="reset" class="btn-draft">Save as Draft</button>
-                <button type="submit" class="btn-submit">Submit Registration</button>
-            </div>
-        </div>
-    </form>
+    <!-- IV. Member Type -->
+    <h2 class="section-title">IV. Member Type</h2>
+    <div class="grid">
+      <div class="col-6 member-type-box direct">
+        <div class="box-title">Direct Contributor</div>
+        <div id="direct-contributors"></div>
+      </div>
+      <div class="col-6 member-type-box indirect">
+        <div class="box-title">Indirect Contributor</div>
+        <div id="indirect-contributors"></div>
+      </div>
+    </div>
+
+    <!-- Footer Callout -->
+    <div class="consent-box">
+      <span class="material-symbols-outlined">info</span>
+      <p>
+        I hereby certify that the information provided above is true and correct
+        to the best of my knowledge and that my signature below serves as my
+        consent to the processing of my personal data in accordance with the
+        Data Privacy Act of 2012.
+      </p>
+    </div>
+
+    <!-- Submit Section -->
+    <div class="form-actions">
+      <div class="security-badge">
+        <span class="material-symbols-outlined">security</span>
+        Secure submission encrypted by PhilHealth Infrastructure
+      </div>
+      <div class="button-group">
+        <button type="reset" class="btn-draft">Save as Draft</button>
+        <button type="submit" class="btn-submit">Submit Registration</button>
+      </div>
+    </div>
+  </form>
 </div>
 
-<script src="{{ url_for('static', filename='js/philhealth_form.js') }}" defer></script>
+<script
+  src="{{ url_for('static', filename='js/philhealth_form.js') }}"
+  defer
+></script>
 {% endblock %}
