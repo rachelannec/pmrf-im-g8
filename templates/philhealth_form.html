@@ -313,7 +313,8 @@
       </p>
     </div>
 
-    <!-- Submit Section -->
+    <!-- Confirmation Modal -->
+
     <div class="form-actions">
       <div class="security-badge">
         <span class="material-symbols-outlined">security</span>
@@ -325,8 +326,58 @@
       </div>
     </div>
   </form>
-</div>
+  <div
+    id="complete-view"
+    style="display: none; text-align: center; padding: 20px 0"
+  >
+    <span
+      class="material-symbols-outlined"
+      style="font-size: 64px; color: var(--success); margin-bottom: 10px"
+      >check_circle</span
+    >
+    <h2 style="color: var(--primary); margin-bottom: 10px">
+      Registration Successful!
+    </h2>
+    <p style="color: var(--text-muted); margin-bottom: 25px">
+      Thank you for registering. Below is a summary of your official PhilHealth
+      record.
+    </p>
 
+    <div
+      id="final_summary_container"
+      class="review-data-box"
+      style="text-align: left; max-height: none; margin-bottom: 30px"
+    ></div>
+
+    <button type="button" id="btn_register_another" class="btn-submit">
+      Register Another Member
+    </button>
+  </div>
+</div>
+<div id="review_modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 style="color: var(--primary); margin-bottom: 5px">
+      Review Your Registration
+    </h3>
+    <p style="margin-top: 0; margin-bottom: 20px; color: var(--text-muted)">
+      Please review the information you entered below.
+    </p>
+
+    <div id="review_data_container" class="review-data-box"></div>
+
+    <div
+      class="button-group"
+      style="margin-top: 20px; justify-content: flex-end"
+    >
+      <button type="button" id="btn_edit" class="btn-draft">
+        Go Back & Edit
+      </button>
+      <button type="button" id="btn_confirm" class="btn-submit">
+        Confirm & Submit
+      </button>
+    </div>
+  </div>
+</div>
 <script
   src="{{ url_for('static', filename='js/philhealth_form.js') }}"
   defer

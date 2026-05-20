@@ -14,6 +14,19 @@ const birthDateInput = document.getElementById('birth_date');
 // Calculate the maximum allowed date (21 years ago today)
 const today = new Date();
 const maxDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
+// Get exactly today's date in YYYY-MM-DD format
+const currentToday = new Date().toISOString().split('T')[0];
+
+// Create a function that finds every dependent birthdate box and restricts it
+function restrictDependentDates() {
+    const depDateInputs = document.querySelectorAll('input[name="DependentBirthDate"]');
+    depDateInputs.forEach(input => {
+        input.setAttribute('max', currentToday);
+    });
+}
+
+// Run it immediately when the page loads for the first row
+restrictDependentDates();
 // Format it to YYYY-MM-DD for the HTML input
 const formattedMaxDate = maxDate.toISOString().split('T')[0];
 
@@ -126,6 +139,15 @@ if (birthDateInput) {
     birthDateInput.setAttribute('max', formattedMaxDate);
 }
 
+const reviewModal = document.getElementById('review_modal');
+const btnEdit = document.getElementById('btn_edit');
+const btnConfirm = document.getElementById('btn_confirm');
+const reviewDataContainer = document.getElementById('review_data_container');
+// We will store the validated form data here so the confirm button can access it
+let pendingFormData = null;
+
+const steps = document.querySelectorAll('.step'); // Grabs the 3 progress steps
+
 function showMessage(type, text) {
     const icon = type === 'error' ? 'error' : 'check_circle';
     messages.innerHTML = `
@@ -215,9 +237,17 @@ function calculateAge(birthDateString) {
     return age;
 }
 
-document.getElementById('add-dependent').addEventListener('click', () => {
-    dependentsContainer.appendChild(createDependentRow());
-});
+const addDependentBtn = document.getElementById('add-dependent');
+
+if (addDependentBtn) {
+    addDependentBtn.addEventListener('click', () => {
+        // 1. Create the new row
+        dependentsContainer.appendChild(createDependentRow());
+        
+        // 2. Immediately restrict the calendar dates for that new row
+        restrictDependentDates(); 
+    });
+}
 
 function createMemberTypeOption(mt) {
     const label = document.createElement('label');
@@ -275,115 +305,150 @@ async function postForm(url, formData) {
     return payload;
 }
 
+// 1. Intercept the Submit Button to show the Review Modal
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMessage();
 
-    // --- PRIMARY MEMBER AGE VALIDATION ---
-    const userBirthDate = new Date(birthDateInput.value);
-    if (userBirthDate > maxDate) {
-        showMessage('error', 'You must be at least 21 years old to register as a primary member.');
-        return; 
-    }
-
-    // --- PHILSYS ID VALIDATION ---
-    if (philsysInput.value) {
-        // Count just the numbers, ignoring the hyphens
-        const digitCount = philsysInput.value.replace(/\D/g, '').length;
-        if (digitCount !== 16) {
-            showMessage('error', 'PhilSys ID must be exactly 16 digits.');
-            return; // Stops the submission
-        }
-    }
-
-    // --- TIN VALIDATION ---
-    if (tinInput && tinInput.value) {
-        // Count just the numbers, ignoring the hyphens
-        const digitCount = tinInput.value.replace(/\D/g, '').length;
-        if (digitCount < 9 || digitCount > 12) {
-            showMessage('error', 'TIN must be between 9 and 12 digits.');
-            return; // Stops the submission
-        }
-    }
-
-    // --- MOBILE NUMBER VALIDATION ---
-    if (mobileInput && mobileInput.value) {
-        if (mobileInput.value.length !== 16) {
-            showMessage('error', 'Please enter a complete 10-digit mobile number.');
-            return; // Stops the submission
-        }
-    }
-    
-
-    // --- DEPENDENT VALIDATION ---
-    const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
-    
-    for (const row of dependentRows) {
-        const relationship = row.querySelector('select[name="Relationship"]').value;
-        const birthDateVal = row.querySelector('input[name="DependentBirthDate"]').value;
-        const pwdStatus = row.querySelector('select[name="DependentPWD"]').value;
-
-        // Only validate if they actually filled out the row
-        if (relationship && birthDateVal) {
-            const age = calculateAge(birthDateVal);
-
-            if (relationship === 'Child') {
-                if (age >= 21 && pwdStatus === 'No') {
-                    showMessage('error', 'A child dependent must be below 21 years old unless they have a permanent disability (PWD).');
-                    return; // Stops the submission
-                }
-            }
-
-            if (relationship === 'Parent') {
-                if (age < 60 && pwdStatus === 'No') {
-                    showMessage('error', 'A parent dependent must be 60 years old or above unless they have a permanent disability (PWD).');
-                    return; // Stops the submission
-                }
-            }
-        }
-    }
-    // ----------------------------
+    // --- YOUR EXISTING VALIDATIONS GO HERE ---
+    // (Age check, Dependent check, PhilSys check, TIN check, Mobile check)
+    // Make sure you keep all those "if" statements you wrote earlier right here!
+    // -----------------------------------------
 
     updateMemberName();
     updateMailingAddress();
 
-    const formData = new FormData(form);
+    pendingFormData = new FormData(form);
+    
+    // Auto-generate PIN if empty
     const pinInput = form.querySelector('input[name="PIN"]');
-
     if (!pinInput.value.trim()) {
-        pinInput.value = generatePin();
-        formData.set('PIN', pinInput.value);
+        pendingFormData.set('PIN', generatePin());
     }
 
-    if (!formData.get('MailingAddress')) {
-        formData.set('MailingAddress', permAddress.value.trim());
+    if (!pendingFormData.get('MailingAddress')) {
+        pendingFormData.set('MailingAddress', permAddress.value.trim());
     }
 
+    // Generate the HTML for the Review Modal dynamically
+    let summaryHTML = '';
+    for (let [key, value] of pendingFormData.entries()) {
+        // Skip empty fields and the PIN for the review screen
+        if (value && key !== 'PIN') {
+            // Add spaces to camelCase keys for readability (e.g., 'FirstName' -> 'First Name')
+            const readableKey = key.replace(/([A-Z])/g, ' $1').trim();
+            summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${value}</div>`;
+        }
+    }
+    
+    reviewDataContainer.innerHTML = summaryHTML;
+    
+    // Show Modal and update visual progress bar (Optional step)
+    reviewModal.classList.add('show');
+    
+    // --- ADD THIS: Update Progress Bar to "Review" ---
+    if (steps.length > 1) {
+        steps[0].classList.remove('active');
+        steps[1].classList.add('active');
+    }
+    
+});
+
+// Hide Modal if they click "Go Back & Edit"
+btnEdit.addEventListener('click', () => {
+    reviewModal.classList.remove('show');
+    
+    // --- ADD THIS: Revert Progress Bar back to "Form Entry" ---
+    if (steps.length > 1) {
+        steps[1].classList.remove('active');
+        steps[0].classList.add('active');
+    }
+    // ----------------------------------------------------------
+});
+
+// 3. Save to Database if they click "Confirm & Submit"
+btnConfirm.addEventListener('click', async () => {
+    // Hide modal and show loading state if you want
+    reviewModal.classList.remove('show');
+    
     try {
-        const registrant = await postForm('/registrants', formData);
-        const savedPin = registrant.PIN || formData.get('PIN');
+        const registrant = await postForm('/registrants', pendingFormData);
+        const savedPin = registrant.PIN || pendingFormData.get('PIN');
+        const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
 
         for (const row of dependentRows) {
-            const dependentData = new FormData();
-            dependentData.set('PIN', savedPin);
-            dependentData.set('DependentName', row.querySelector('input[name="DependentName"]').value.trim());
-            dependentData.set('Relationship', row.querySelector('select[name="Relationship"]').value);
-            dependentData.set('DependentBirthDate', row.querySelector('input[name="DependentBirthDate"]').value);
-            dependentData.set('DependentCitizenship', row.querySelector('select[name="DependentCitizenship"]').value);
-            dependentData.set('DependentPWD', row.querySelector('select[name="DependentPWD"]').value);
+            const rel = row.querySelector('select[name="Relationship"]').value;
+            const name = row.querySelector('input[name="DependentName"]').value.trim();
+            if (rel && name) { // Only save if they actually filled it out
+                const dependentData = new FormData();
+                dependentData.set('PIN', savedPin);
+                dependentData.set('DependentName', name);
+                dependentData.set('Relationship', rel);
+                dependentData.set('DependentBirthDate', row.querySelector('input[name="DependentBirthDate"]').value);
+                dependentData.set('DependentCitizenship', row.querySelector('select[name="DependentCitizenship"]').value);
+                dependentData.set('DependentPWD', row.querySelector('select[name="DependentPWD"]').value);
 
-            await postForm('/dependents', dependentData);
+                await postForm('/dependents', dependentData);
+            }
         }
 
         showMessage('success', `Registration saved successfully! PIN: ${savedPin}`);
         form.reset();
         dependentsContainer.innerHTML = '';
         dependentsContainer.appendChild(createDependentRow());
-        updateMailingAddress();
+        dependentsContainer.appendChild(createDependentRow());
+        restrictDependentDates();
+        
+        // Update visual progress bar to "Complete" here!
+        if (steps.length > 2) {
+            steps[1].classList.remove('active');
+            steps[2].classList.add('active');
+        }
+
+        // 2. Hide the original form and headers so the screen is blank
+        form.style.display = 'none';
+        document.querySelector('.form-header').style.display = 'none';
+        document.getElementById('messages').style.display = 'none';
+
+        // 3. Copy the summary text from the Review modal directly into the Complete screen
+        document.getElementById('final_summary_container').innerHTML = reviewDataContainer.innerHTML;
+
+        // 4. Show the new Complete Screen
+        document.getElementById('complete-view').style.display = 'block';
+        
+        // 5. Scroll to the top of the page so they see the big green checkmark
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
     } catch (error) {
         showMessage('error', error.message || 'Registration failed.');
     }
 });
 
-if (!dependentsContainer.children.length) dependentsContainer.appendChild(createDependentRow());
+if (!dependentsContainer.children.length) {
+    dependentsContainer.appendChild(createDependentRow());
+}
+restrictDependentDates();
 loadMemberTypes();
+
+// Reset everything to start a new registration
+document.getElementById('btn_register_another').addEventListener('click', () => {
+    // Reset the form data
+    form.reset();
+    dependentsContainer.innerHTML = '';
+    dependentsContainer.appendChild(createDependentRow());
+    restrictDependentDates();
+    
+    // Swap the screens back
+    document.getElementById('complete-view').style.display = 'none';
+    form.style.display = 'block';
+    document.querySelector('.form-header').style.display = 'block';
+    document.getElementById('messages').style.display = 'block';
+    
+    // Reset the progress bar back to Step 1
+    if (steps.length > 2) {
+        steps[2].classList.remove('active');
+        steps[0].classList.add('active');
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
