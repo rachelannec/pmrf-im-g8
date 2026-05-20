@@ -11,6 +11,24 @@ const memberNameInput = document.querySelector('input[name="MemberName"]');
 
 const birthDateInput = document.getElementById('birth_date');
 
+// Auto-capitalize name fields as the user types
+document.addEventListener('input', (e) => {
+    // List the IDs or Names of the fields we want to force to uppercase
+    const uppercaseFields = ['last_name', 'first_name', 'middle_name', 'MotherMaidenName', 'DependentName'];
+    
+    if (uppercaseFields.includes(e.target.id) || uppercaseFields.includes(e.target.name)) {
+        // Save the cursor position so it doesn't jump to the end of the word
+        const start = e.target.selectionStart;
+        const end = e.target.selectionEnd;
+        
+        // Force the text to uppercase
+        e.target.value = e.target.value.toUpperCase();
+        
+        // Put the cursor back where it was
+        e.target.setSelectionRange(start, end);
+    }
+});
+
 // Calculate the maximum allowed date (21 years ago today)
 const today = new Date();
 const maxDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
@@ -194,7 +212,7 @@ function createDependentRow() {
     const tr = document.createElement('tr');
     tr.className = 'dependent-row';
     tr.innerHTML = `
-        <td><input type="text" name="DependentName" class="table-input" placeholder="Full legal name" required></td>
+        <td><input type="text" name="DependentName" class="table-input" placeholder="Last, First, MI" required></td>
         <td>
             <select name="Relationship" class="table-input" required>
                 <option value="" disabled selected>Select...</option>
