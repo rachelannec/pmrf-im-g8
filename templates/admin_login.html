@@ -14,7 +14,7 @@
             Invalid username or password.
         </div>
 
-        <form id="admin-login-form">
+        <form id="admin-login-form" autocomplete="off">
             <div class="form-group" style="margin-bottom: 16px;">
                 <label for="admin-user">Admin Username</label>
                 <input type="text" id="admin-user" class="form-control" placeholder="Enter username" autocomplete="off" required>
@@ -22,7 +22,7 @@
             
             <div class="form-group" style="margin-bottom: 24px;">
                 <label for="admin-pass">Password</label>
-                <input type="password" id="admin-pass" class="form-control" placeholder="Enter password" required>
+                <input type="password" id="admin-pass" class="form-control" placeholder="Enter password" autocomplete="off" required>
             </div>
 
             <button type="submit" class="btn-submit" style="width: 100%; background: var(--secondary);">Verify Credentials</button>
@@ -54,8 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(res => {
             if (res.status === 200) {
-                alert('Success! ' + res.body.message + ' (This is where the dashboard loads for the demo)');
-                // window.location.href = "/admin/dashboard"; <-- If you build a dashboard later, point here!
+                window.location.href = res.body.redirect_url || '/admin/dashboard';
             } else {
                 // Show the error message banner
                 errorBox.innerText = res.body.message;

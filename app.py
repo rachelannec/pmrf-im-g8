@@ -1,25 +1,55 @@
 # pip install -r requirements.txt
+import os
 from pathlib import Path
 import random
 import sqlite3
+from functools import wraps
 
-from flask import Flask, flash, redirect, render_template, request, url_for, jsonify
-
-DEMO_CREDENTIALS = {
-    "admin": {
-        "rcilon": "admin123",
-        "jcusipag": "admin123",
-		"rgallaza": "admin123",
-        "kjavines": "admin123",
-		"amendoza": "admin123", 
-    },
-}
-
+from flask import Flask, flash, redirect, render_template, request, session, url_for, jsonify
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key"
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "philhealth.db"
+
+# lets use .env file instead of hardcoding ung credentials sa code, will update the vercel settings para magamit sa deployed version
+def load_env_file(env_path):
+	if not env_path.exists():
+		return
+
+	for line in env_path.read_text(encoding="utf-8").splitlines():
+		entry = line.strip()
+		if not entry or entry.startswith("#") or "=" not in entry:
+			continue
+
+		key, value = entry.split("=", 1)
+		key = key.strip()
+		value = value.strip().strip('"').strip("'")
+		if key and key not in os.environ:
+			os.environ[key] = value
+
+
+load_env_file(BASE_DIR / ".env")
+
+
+def parse_admin_credentials():
+	raw_credentials = os.environ.get("ADMIN_CREDENTIALS", "").strip()
+	admins = {}
+
+	for pair in raw_credentials.split(","):
+		entry = pair.strip()
+		if not entry or ":" not in entry:
+			continue
+		username, password = entry.split(":", 1)
+		username = username.strip()
+		password = password.strip()
+		if username:
+			admins[username] = password
+
+	return {"admin": admins}
+
+
+DEMO_CREDENTIALS = parse_admin_credentials()
 
 
 def get_db_connection():
@@ -98,6 +128,44 @@ def generate_pin(connection):
 			return pin
 
 
+def admin_required(view_func):
+	@wraps(view_func)
+	def wrapped_view(*args, **kwargs):
+		if not session.get("admin_user"):
+			if request.is_json or request.path.endswith("/execute"):
+				return jsonify({"ok": False, "message": "Admin session expired. Please sign in again."}), 401
+			return redirect(url_for("admin_login"))
+		return view_func(*args, **kwargs)
+
+	return wrapped_view
+
+
+def get_admin_dashboard_data():
+	with get_db_connection() as conn:
+		registrant_count = conn.execute("SELECT COUNT(*) AS count FROM registrant_details").fetchone()["count"]
+		dependent_count = conn.execute("SELECT COUNT(*) AS count FROM dependent_details").fetchone()["count"]
+		membertype_count = conn.execute("SELECT COUNT(*) AS count FROM membership_details").fetchone()["count"]
+		recent_registrants = conn.execute(
+			"SELECT PIN, MemberName, MobilePhone, EmailAddress, MemberTypeID, created_at FROM registrant_details ORDER BY id DESC LIMIT 5"
+		).fetchall()
+		recent_dependents = conn.execute(
+			"SELECT PIN, DependentName, Relationship, DependentBirthDate, created_at FROM dependent_details ORDER BY DependentID DESC LIMIT 5"
+		).fetchall()
+
+	return {
+		"registrant_count": registrant_count,
+		"dependent_count": dependent_count,
+		"membertype_count": membertype_count,
+		"recent_registrants": [dict(row) for row in recent_registrants],
+		"recent_dependents": [dict(row) for row in recent_dependents],
+	}
+
+
+def is_read_only_sql(query):
+	allowed_prefixes = ("select", "with", "pragma", "explain")
+	return query.lstrip().lower().startswith(allowed_prefixes)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 	# Render the PhilHealth membership form. The form submits to the JSON API endpoints
@@ -115,6 +183,9 @@ def register():
 @app.route("/login/admin", methods=["GET", "POST"])
 def admin_login():
     init_db()
+    if session.get("admin_user"):
+        return redirect(url_for("admin_dashboard"))
+
     if request.method == "POST":
         payload = request.get_json(silent=True) or request.form
         username = payload.get("username", "").strip()
@@ -122,11 +193,79 @@ def admin_login():
         
         # Verify credentials against our hardcoded demo dict
         if username in DEMO_CREDENTIALS["admin"] and DEMO_CREDENTIALS["admin"][username] == password:
-            return jsonify({"ok": True, "message": "Login successful!"}), 200
+            session["admin_user"] = username
+            return jsonify({
+                "ok": True,
+                "message": "Login successful!",
+                "redirect_url": url_for("admin_dashboard"),
+            }), 200
         else:
             return jsonify({"ok": False, "message": "Invalid username or password."}), 401
             
     return render_template("admin_login.html")
+
+
+@app.route("/admin/dashboard")
+@admin_required
+def admin_dashboard():
+	init_db()
+	return render_template(
+		"admin_dashboard.html",
+		admin_user=session.get("admin_user"),
+		**get_admin_dashboard_data(),
+	)
+
+
+@app.route("/admin/workbench")
+@admin_required
+def admin_workbench():
+	init_db()
+	with get_db_connection() as conn:
+		tables = conn.execute(
+			"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+		).fetchall()
+	return render_template(
+		"admin_workbench.html",
+		admin_user=session.get("admin_user"),
+		tables=[row["name"] for row in tables],
+		default_query="SELECT PIN, MemberName, MobilePhone, EmailAddress, created_at FROM registrant_details ORDER BY id DESC LIMIT 25;",
+	)
+
+
+@app.route("/admin/workbench/execute", methods=["POST"])
+@admin_required
+def admin_workbench_execute():
+	init_db()
+	payload = request.get_json(silent=True) or request.form
+	query = (payload.get("query") or "").strip()
+
+	if not query:
+		return jsonify({"ok": False, "message": "Enter an SQL query."}), 400
+
+	if not is_read_only_sql(query):
+		return jsonify({"ok": False, "message": "Only read-only SQL queries are allowed in this workbench."}), 400
+
+	try:
+		with get_db_connection() as conn:
+			cursor = conn.execute(query)
+			columns = [description[0] for description in cursor.description] if cursor.description else []
+			rows = [dict(row) for row in cursor.fetchall()] if columns else []
+			return jsonify({
+				"ok": True,
+				"columns": columns,
+				"rows": rows,
+				"rowcount": len(rows),
+				"message": f"Query returned {len(rows)} row(s).",
+			})
+	except sqlite3.Error as error:
+		return jsonify({"ok": False, "message": f"SQL error: {error}"}), 400
+
+
+@app.route("/admin/logout")
+@admin_required
+def admin_logout():
+	session.pop("admin_user", None)
+	return redirect(url_for("admin_login"))
 
 
 @app.route("/login/member")
