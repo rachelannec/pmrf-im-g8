@@ -360,12 +360,12 @@ form.addEventListener('submit', async (e) => {
     // Generate the HTML for the Review Modal dynamically
     let summaryHTML = '';
     for (let [key, value] of pendingFormData.entries()) {
-        // Skip empty fields and the PIN for the review screen
-        if (value && key !== 'PIN') {
-            // Add spaces to camelCase keys for readability (e.g., 'FirstName' -> 'First Name')
-            const readableKey = key.replace(/([A-Z])/g, ' $1').trim();
-            summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${value}</div>`;
-        }
+        // Skip empty fields and exclude the Suffix (already in MemberName)
+        if (!value || key === 'Suffix') continue;
+
+        // Friendly label: keep 'PIN' uppercase, otherwise split camelCase
+        let readableKey = key === 'PIN' ? 'PIN' : key.replace(/([A-Z])/g, ' $1').trim();
+        summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${value}</div>`;
     }
     
     reviewDataContainer.innerHTML = summaryHTML;
