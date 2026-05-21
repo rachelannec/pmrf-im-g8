@@ -228,7 +228,7 @@ def admin_workbench():
 		"admin_workbench.html",
 		admin_user=session.get("admin_user"),
 		tables=[row["name"] for row in tables],
-		default_query="SELECT PIN, MemberName, MobilePhone, EmailAddress, created_at FROM registrant_details ORDER BY id DESC LIMIT 25;",
+		default_query="SELECT PIN, MemberName, MobilePhone, EmailAddress, created_at FROM registrant_details ORDER BY id DESC LIMIT 25;\n\n-- To see metadata (put this on next line and remove other query and this comment): PRAGMA table_info(registrant_details);",
 	)
 
 
