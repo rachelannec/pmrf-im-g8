@@ -15,6 +15,9 @@
         <a href="/admin/workbench" class="btn-submit" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: var(--secondary);">
           <span class="material-symbols-outlined">terminal</span> Open Workbench
         </a>
+        <a href="/admin/manage" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined">edit</span> Manage Records
+        </a>
         <a href="/admin/logout" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
           <span class="material-symbols-outlined">logout</span> Logout
         </a>
@@ -46,6 +49,18 @@
       </div>
       <div style="font-size: 40px; font-weight: 800; color: var(--primary); line-height: 1;">{{ membertype_count }}</div>
       <p style="margin-top: 8px; color: var(--text-muted); font-size: 13px;">Membership categories seeded in the lookup table.</p>
+    </div>
+  </div>
+
+  <div class="form-card" style="margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <div>
+        <h2 class="section-title" style="margin: 0; border-left-color: var(--secondary);">Record Manipulation</h2>
+        <p style="margin-top: 8px; color: var(--text-muted);">Open the manipulation area to update or delete stored registrant and dependent records.</p>
+      </div>
+      <a href="/admin/manage" class="btn-submit" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: var(--secondary);">
+        <span class="material-symbols-outlined">edit</span> Open Manipulate Area
+      </a>
     </div>
   </div>
 
