@@ -5,6 +5,16 @@ import sqlite3
 
 from flask import Flask, flash, redirect, render_template, request, url_for, jsonify
 
+DEMO_CREDENTIALS = {
+    "admin": {
+        "rcilon": "admin123",
+        "jcusipag": "admin123",
+		"rgallaza": "admin123",
+        "kjavines": "admin123",
+		"amendoza": "admin123", 
+    },
+}
+
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key"
@@ -92,8 +102,37 @@ def generate_pin(connection):
 def index():
 	# Render the PhilHealth membership form. The form submits to the JSON API endpoints
 	init_db()
-	return render_template("philhealth_form.html")
+	return render_template("landing.html")
 
+
+@app.route("/register")
+def register():
+    init_db()
+    # Replace 'pmrf_form.html' with your groupmate's actual HTML filename if it's named differently (e.g., index.html)
+    return render_template("philhealth_form.html")
+
+
+@app.route("/login/admin", methods=["GET", "POST"])
+def admin_login():
+    init_db()
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or request.form
+        username = payload.get("username", "").strip()
+        password = payload.get("password", "").strip()
+        
+        # Verify credentials against our hardcoded demo dict
+        if username in DEMO_CREDENTIALS["admin"] and DEMO_CREDENTIALS["admin"][username] == password:
+            return jsonify({"ok": True, "message": "Login successful!"}), 200
+        else:
+            return jsonify({"ok": False, "message": "Invalid username or password."}), 401
+            
+    return render_template("admin_login.html")
+
+
+@app.route("/login/member")
+def member_login():
+    init_db()
+    return render_template("member_login.html")
 
 
 @app.route("/registrants", methods=["GET", "POST"])

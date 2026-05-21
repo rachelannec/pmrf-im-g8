@@ -3,58 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhilHealth Portal</title>
+    <title>PRISM Portal</title>
     
-    <!-- Load Public Sans Font -->
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
-    <!-- Load Material Symbols for Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     
-    <!-- Link to our custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/philhealth.css') }}">
 </head>
-<body>
-    <!-- Global Header -->
-    <header class="top-nav">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <span class="material-symbols-outlined logo-icon">health_and_safety</span>
-                <span class="logo-text">PhilHealth Portal</span>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="active">Registration</a>
-                <a href="#">Benefits</a>
-                <a href="#">Services</a>
-                <a href="#">Contact</a>
-            </div>
-            <div class="nav-actions">
-                <button class="btn-text">Help</button>
-                <button class="btn-login">Login</button>
+
+<div id="about-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 3000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+    
+    <div style="background: var(--surface); max-width: 600px; width: 92%; max-height: 85vh; overflow-y: auto; padding: 32px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; gap: 20px; font-family: 'Public Sans', sans-serif;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 20px; color: var(--primary); font-weight: 700; letter-spacing: -0.5px;">About PRISM</h3>
+            <button id="close-about-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+            </button>
+        </div>
+
+        <div style="font-size: 14px; color: var(--text-main); line-height: 1.6; display: flex; flex-direction: column; gap: 16px;">
+            <p style="margin: 0;">
+                The Republic Act 7875, also known as the National Health Insurance Act of 1995, established the Philippine Health Insurance Corporation (PhilHealth), mandated to provide social health insurance coverage to all Filipinos. The PhilHealth Member Registration Form (PMRF) is the official document used to collect, update, and verify the demographic and membership data of every citizen. Whether processed through digital portals or at physical PhilHealth offices, the filled-out PMRF contains all essential data required to create a formal record for a citizen, ensuring they can access their healthcare benefits when needed.
+            </p>
+            
+            <p style="margin: 0;">
+                PRISM Portal is designed to streamline and mirror this process, ensuring that important information is managed efficiently.
+            </p>
+
+            <p style="margin: 0; font-size: 14px;">
+                This platform was developed in partial fulfillment of the requirements for the course Information Management by second-year students of the Polytechnic University of the Philippines (PUP) Sta. Mesa, for the School Year 2025–2026. Through this project, our team aimed to apply database concepts and information management principles to a real-world system that impacts millions of Filipino lives.
+            </p>
+
+            <div style="margin-top: 8px; border-top: 1px solid var(--border-light); padding-top: 16px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">Project Contributors</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;">
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Cilon, Rachel Anne</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">rachelannec</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Cusipag, Julian Lawrence M.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">JRenMC</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Gallaza, Romar M.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">Romar-jpg</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Javines, Kathy Nicole E.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">kn24javines-dev</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Mendoza, Aaron Kerk P.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">lhadypirena</span>
+                    </li>
+                </ul>
             </div>
         </div>
-    </header>
+    </div>
+</div>
 
-    <!-- Main Content Area where forms are injected -->
-    <main>
+<body>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* This places a thin 35% white tint over your image to balance the vibrancy */
+            background-image: linear-gradient(rgba(245, 247, 250, 0.20), rgba(245, 247, 250, 0.20)), 
+                            url("{{ url_for('static', filename='images/prism_bg.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+
+    <nav class="top-nav" style="position: relative; z-index: 1000; background: var(--surface); border-bottom: 1px solid var(--border-light);">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1120px; margin: 0 auto; padding: 0 20px; height: 64px;">
+            
+            <div class="nav-logo" style="display: flex; align-items: center; gap: 12px;">
+                <img src="{{ url_for('static', filename='images/prism_logo.png') }}" 
+                     alt="PRISM Logo" 
+                     style="height: 40px; width: auto; object-fit: contain;">
+                     
+                <div style="display: flex; flex-direction: column;">
+                    <span class="logo-text" style="font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1;">PRISM</span>
+                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 4px;">PhilHealth Registration and Information System Management</span>
+                </div>
+            </div>
+
+            <button id="menu-toggle-btn" style="background: none; border: none; color: var(--text-main); cursor: pointer; display: flex; align-items: center; padding: 8px;" aria-label="Open Sidebar Menu">
+                <span class="material-symbols-outlined" style="font-size: 30px;">menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="sidebar-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px); z-index: 1999; opacity: 0; transition: opacity 0.3s ease;"></div>
+
+    <div id="side-drawer" style="position: fixed; top: 0; right: -300px; width: 300px; height: 100vh; background: var(--surface); box-shadow: -4px 0 12px rgba(0,0,0,0.15); z-index: 2000; transition: right 0.3s ease-in-out; display: flex; flex-direction: column;">
+        
+        <div style="display: flex; justify-content: flex-end; padding: 16px 20px; border-bottom: 1px solid var(--border-light);">
+            <button id="menu-close-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center;" aria-label="Close Sidebar Menu">
+                <span class="material-symbols-outlined" style="font-size: 28px;">close</span>
+            </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; padding: 20px 0;">
+            <a href="/" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--primary);">login</span> Log In
+            </a>
+            <a href="#" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--secondary);">info</span> About Us
+            </a>
+            <a href="#" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--text-muted);">help</span> Help
+            </a>
+        </div>
+    </div>
+
+    <main style="flex: 1;">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Global Footer -->
-    <footer class="site-footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <span class="footer-logo">PhilHealth Portal</span>
-                <p>© 2024 Philippine Health Insurance Corporation. All rights reserved.</p>
-            </div>
-            <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Transparency Seal</a>
-                <a href="#">Citizen's Charter</a>
-                <a href="#">Contact Us</a>
-            </div>
+    <footer style="margin-top: auto; padding: 24px 20px; background: var(--surface); border-top: 1px solid var(--border-light); text-align: center;">
+        <div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;">
+            <p style="margin: 0; font-size: 14px; color: var(--text-main); font-weight: 500;">
+                &copy; 2026 Database Project • PRISM Portal
+            </p>
+            <p style="margin: 0; font-size: 12px; color: var(--text-muted); font-style: italic;">
+                This is developed for educational presentation purposes only. All rights reserved.
+            </p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuBtn = document.getElementById('menu-toggle-btn');
+            const closeBtn = document.getElementById('menu-close-btn');
+            const drawer = document.getElementById('side-drawer');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function openSidebar() {
+                overlay.style.display = 'block';
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    drawer.style.right = '0';
+                }, 10);
+            }
+
+            function closeSidebar() {
+                drawer.style.right = '-300px';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
+            }
+
+            menuBtn.addEventListener('click', openSidebar);
+            closeBtn.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            const links = drawer.querySelectorAll('.sidebar-link');
+            links.forEach(link => {
+                link.addEventListener('mouseenter', () => {
+                    link.style.background = 'var(--surface-alt)';
+                    link.style.paddingLeft = '28px';
+                });
+                link.addEventListener('mouseleave', () => {
+                    link.style.background = 'transparent';
+                    link.style.paddingLeft = '24px';
+                });
+            
+                const aboutLink = document.querySelector('a[href="#"].sidebar-link'); // Selects the About Us link
+                const aboutModal = document.getElementById('about-modal');
+                const closeAboutBtn = document.getElementById('close-about-btn');
+
+                function openAboutModal(e) {
+                    e.preventDefault();
+                    closeSidebar();
+                    aboutModal.style.display = 'flex';
+                    setTimeout(() => { aboutModal.style.opacity = '1'; }, 10);
+                }
+
+                function closeAboutModal() {
+                    aboutModal.style.opacity = '0';
+                    setTimeout(() => { aboutModal.style.display = 'none'; }, 250);
+                }
+
+                if (aboutLink) {
+                    const linksArray = Array.from(document.querySelectorAll('.sidebar-link'));
+                    const targetedAboutBtn = linksArray.find(el => el.textContent.includes('info'));
+                    if (targetedAboutBtn) {
+                        targetedAboutBtn.addEventListener('click', openAboutModal);
+                    }
+                }
+                closeAboutBtn.addEventListener('click', closeAboutModal);
+                aboutModal.addEventListener('click', function(e) {
+                    if (e.target === aboutModal) closeAboutModal();
+                });
+            });
+        });
+    </script>
 </body>
 </html>

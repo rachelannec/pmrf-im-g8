@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<main style="padding-top: 0;">
+    <div class="form-card" style="max-width: 450px; margin: 60px auto;">
+        <div class="form-header" style="text-align: center;">
+            <span class="material-symbols-outlined" style="font-size: 48px; color: var(--secondary); margin-bottom: 12px;">admin_panel_settings</span>
+            <h1 style="color: var(--secondary) !important; font-weight: 700;">Administrator Sign In</h1>
+            <p style="color: var(--text-main); font-weight: 500;">This portal is for authorized administrative personnel only. Unauthorized access is strictly prohibited.</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 24px 0;">
+
+        <div id="login-error-msg" style="display: none; background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); color: var(--error); padding: 12px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-bottom: 16px; text-align: center;">
+            Invalid username or password.
+        </div>
+
+        <form id="admin-login-form">
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="admin-user">Admin Username</label>
+                <input type="text" id="admin-user" class="form-control" placeholder="Enter username" autocomplete="off" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label for="admin-pass">Password</label>
+                <input type="password" id="admin-pass" class="form-control" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn-submit" style="width: 100%; background: var(--secondary);">Verify Credentials</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" style="font-size: 14px; color: var(--text-muted); text-decoration: none;">← Back to Portal Selection</a>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('admin-login-form');
+    const errorBox = document.getElementById('login-error-msg');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Stop page from hard reloading
+        errorBox.style.display = 'none';
+
+        const username = document.getElementById('admin-user').value;
+        const password = document.getElementById('admin-pass').value;
+
+        fetch('/login/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(res => {
+            if (res.status === 200) {
+                alert('Success! ' + res.body.message + ' (This is where the dashboard loads for the demo)');
+                // window.location.href = "/admin/dashboard"; <-- If you build a dashboard later, point here!
+            } else {
+                // Show the error message banner
+                errorBox.innerText = res.body.message;
+                errorBox.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            errorBox.innerText = 'Something went wrong. Please try again.';
+            errorBox.style.display = 'block';
+        });
+    });
+});
+</script>
+{% endblock %}
