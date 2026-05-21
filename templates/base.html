@@ -12,6 +12,59 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/philhealth.css') }}">
 </head>
 
+<div id="about-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 3000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+    
+    <div style="background: var(--surface); max-width: 600px; width: 92%; max-height: 85vh; overflow-y: auto; padding: 32px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; gap: 20px; font-family: 'Public Sans', sans-serif;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 20px; color: var(--primary); font-weight: 700; letter-spacing: -0.5px;">About PRISM</h3>
+            <button id="close-about-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+            </button>
+        </div>
+
+        <div style="font-size: 14px; color: var(--text-main); line-height: 1.6; display: flex; flex-direction: column; gap: 16px;">
+            <p style="margin: 0;">
+                The Republic Act 7875, also known as the National Health Insurance Act of 1995, established the Philippine Health Insurance Corporation (PhilHealth), mandated to provide social health insurance coverage to all Filipinos. The PhilHealth Member Registration Form (PMRF) is the official document used to collect, update, and verify the demographic and membership data of every citizen. Whether processed through digital portals or at physical PhilHealth offices, the filled-out PMRF contains all essential data required to create a formal record for a citizen, ensuring they can access their healthcare benefits when needed.
+            </p>
+            
+            <p style="margin: 0;">
+                PRISM Portal is designed to streamline and mirror this process, ensuring that important information is managed efficiently.
+            </p>
+
+            <p style="margin: 0; font-size: 14px;">
+                This platform was developed in partial fulfillment of the requirements for the course Information Management by second-year students of the Polytechnic University of the Philippines (PUP) Sta. Mesa, for the School Year 2025–2026. Through this project, our team aimed to apply database concepts and information management principles to a real-world system that impacts millions of Filipino lives.
+            </p>
+
+            <div style="margin-top: 8px; border-top: 1px solid var(--border-light); padding-top: 16px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">Project Contributors</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;">
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Cilon, Rachel Anne</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">rachelannec</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Cusipag, Julian Lawrence M.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">JRenMC</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Gallaza, Romar M.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">Romar-jpg</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Javines, Kathy Nicole E.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">kn24javines-dev</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 10px 14px; border-radius: 6px;">
+                        <span style="font-weight: 500; color: var(--text-main);">Mendoza, Aaron Kerk P.</span>
+                        <span style="color: var(--secondary); font-weight: 600; font-family: inherit;">lhadypirena</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <body>
     <style>
         body {
@@ -122,6 +175,34 @@
                 link.addEventListener('mouseleave', () => {
                     link.style.background = 'transparent';
                     link.style.paddingLeft = '24px';
+                });
+            
+                const aboutLink = document.querySelector('a[href="#"].sidebar-link'); // Selects the About Us link
+                const aboutModal = document.getElementById('about-modal');
+                const closeAboutBtn = document.getElementById('close-about-btn');
+
+                function openAboutModal(e) {
+                    e.preventDefault();
+                    closeSidebar();
+                    aboutModal.style.display = 'flex';
+                    setTimeout(() => { aboutModal.style.opacity = '1'; }, 10);
+                }
+
+                function closeAboutModal() {
+                    aboutModal.style.opacity = '0';
+                    setTimeout(() => { aboutModal.style.display = 'none'; }, 250);
+                }
+
+                if (aboutLink) {
+                    const linksArray = Array.from(document.querySelectorAll('.sidebar-link'));
+                    const targetedAboutBtn = linksArray.find(el => el.textContent.includes('info'));
+                    if (targetedAboutBtn) {
+                        targetedAboutBtn.addEventListener('click', openAboutModal);
+                    }
+                }
+                closeAboutBtn.addEventListener('click', closeAboutModal);
+                aboutModal.addEventListener('click', function(e) {
+                    if (e.target === aboutModal) closeAboutModal();
                 });
             });
         });
