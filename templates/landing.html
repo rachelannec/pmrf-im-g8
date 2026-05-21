@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - PhilHealth PMRF System</title>
+    
+    <!-- Load groupmate's typography and icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <!-- Link the groupmate's CSS file. Ensure this path matches your project structure -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/philhealth.css') }}">
+</head>
+<body>
+
+    {% extends "base.html" %}
+    {% block content %}
+    <!-- Main Body Container -->
+    <main>
+        <div class="form-card" style="max-width: 650px; margin: 40px auto; text-align: center;">
+            <div class="form-header">
+                <h1>Welcome to PRISM!</h1>
+                <p>Please choose a portal to continue.</p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 24px 0;">
+
+            <!-- Options Stack -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- Admin Option Box (Uses Indirect Blue style) -->
+                <a href="/login/admin" style="text-decoration: none; color: inherit;">
+                    <div class="member-type-box indirect" style="text-align: left; transition: transform 0.2s; cursor: pointer; border-color: var(--secondary);" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="box-title" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--secondary);">admin_panel_settings</span> Administrator Portal
+                        </div>
+                        <span class="member-title" style="color: var(--secondary); font-weight: 700;">Sign In as Admin</span>
+                        <span class="member-desc">This portal is for authorized administrative personnel only. Unauthorized access is strictly prohibited.</span>
+                    </div>
+                </a>
+
+                <!-- Member Option Box (Uses Direct Green style to highlight action) -->
+                <a href="/login/member" style="text-decoration: none; color: inherit;">
+                    <div class="member-type-box direct" style="text-align: left; transition: transform 0.2s; cursor: pointer; border-color: var(--primary);" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="box-title" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined">account_circle</span> Existing Member Portal
+                        </div>
+                        <span class="member-title" style="color: var(--primary); font-weight: 700;">Sign In as Member</span>
+                        <span class="member-desc">View your existing membership records or update profile data.</span>
+                    </div>
+                </a>
+
+                <!-- Registration Option Box (Uses Direct Green style to highlight action) -->
+                <a href="/register" style="text-decoration: none; color: inherit;">
+                    <div class="member-type-box direct" style="text-align: left; transition: transform 0.2s; cursor: pointer; border-color: var(--primary);" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="box-title" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined">assignment_ind</span> Registration
+                        </div>
+                        <span class="member-title" style="color: var(--primary); font-weight: 700;">Sign Up for PhilHealth Membership</span>
+                        <span class="member-desc">Fill out the PhilHealth Member Registration Form (PMRF) digitally to register as a new member.</span>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </main>
+
+    {% endblock %}
+
+    <!-- Site Footer (Matches groupmate's footer layout) -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="footer-logo">PMRF Portal</div>
+                <p>© 2026 Interactive Management - Project Group 8. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Support</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
