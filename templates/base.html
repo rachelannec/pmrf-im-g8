@@ -120,6 +120,20 @@
             <a href="/" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
                 <span class="material-symbols-outlined" style="color: var(--primary);">login</span> Log In
             </a>
+            {% if session.get('admin_user') %}
+            <a href="/admin/dashboard" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--secondary);">dashboard</span> Admin Dashboard
+            </a>
+            <a href="/admin/workbench" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--primary);">terminal</span> SQL Workbench
+            </a>
+            <a href="/admin/manage" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--secondary);">edit</span> Manage Records
+            </a>
+            <a href="/admin/logout" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--error);">logout</span> Logout
+            </a>
+            {% endif %}
             <a href="#" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
                 <span class="material-symbols-outlined" style="color: var(--secondary);">info</span> About Us
             </a>

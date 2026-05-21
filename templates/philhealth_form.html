@@ -70,7 +70,7 @@
         <label>First Name *</label>
         <input type="text" id="first_name" class="form-control" required />
       </div>
-      <div class="col-3 form-group">
+      <div class="col-2 form-group">
         <label>Middle Name</label>
         <input type="text" id="middle_name" class="form-control" />
       </div>
@@ -83,19 +83,27 @@
           placeholder="Jr/Sr"
         />
       </div>
-      <div class="col-2"></div>
+
+      <!-- <div class="col-"></div> -->
+
+      <div class="col-3 form-group">
+        <label>Spouse Name (if Married)</label>
+        <input type="text" name="SpouseName" class="form-control" placeholder="Last, First, MI" />
+      </div>
+
       <!-- Spacer -->
 
-      <div class="col-5 form-group">
+      <div class="col-4 form-group">
         <label>Mother's Maiden Name *</label>
         <input
           type="text"
           name="MotherMaidenName"
           class="form-control"
+          placeholder="Last, First, MI" 
           required
         />
       </div>
-      <div class="col-3 form-group">
+      <div class="col-4 form-group">
         <label>Birth Date *</label>
         <input
           type="date"

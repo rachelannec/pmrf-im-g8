@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+<main style="padding-top: 0; max-width: 1240px;">
+  <div class="form-card" style="margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 16px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px;">terminal</span>
+          <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">SQL Workbench</span>
+        </div>
+        <h1 style="margin-bottom: 10px; color: var(--primary);">Read-only query runner</h1>
+        <p style="max-width: 840px; margin: 0; color: var(--text-main);">Use this panel to inspect data with <strong>SELECT</strong>, <strong>WITH</strong>, <strong>PRAGMA</strong>, or <strong>EXPLAIN</strong> statements. Write operations are blocked.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <a href="/admin/dashboard" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+        <a href="/admin/logout" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined">logout</span> Logout
+        </a>
+      </div>
+    </div>
+
+    <form id="sql-workbench-form" autocomplete="off">
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="sql-query">SQL Query</label>
+        <textarea id="sql-query" class="form-control" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" style="font-family: Consolas, 'Courier New', monospace;">{{ default_query }}</textarea>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--text-muted); font-size: 13px;">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--secondary);">database</span>
+          {% for table in tables %}
+          <span style="background: var(--surface-alt); border: 1px solid var(--border-light); border-radius: 999px; padding: 6px 10px;">{{ table }}</span>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn-submit" style="min-width: 160px; background: var(--secondary);">Run Query</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="workbench-message"></div>
+
+  <section class="form-card">
+    <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px;">
+      <h2 class="section-title" style="margin: 0; border-left-color: var(--secondary);">Query Results</h2>
+      <div id="result-summary" style="color: var(--text-muted); font-weight: 600;">No query run yet.</div>
+    </div>
+    <div class="table-container" id="results-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="results-body">
+          <tr>
+            <td colspan="2" style="text-align: center; color: var(--text-muted);">Run a query to view results.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('sql-workbench-form');
+  const queryInput = document.getElementById('sql-query');
+  const messageBox = document.getElementById('workbench-message');
+  const resultSummary = document.getElementById('result-summary');
+  const resultsTable = document.querySelector('#results-container table');
+  let resultsBody = document.getElementById('results-body');
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderMessage(type, text) {
+    const icon = type === 'error' ? 'error' : 'check_circle';
+    messageBox.innerHTML = `
+      <div class="alert alert-${type}">
+        <span class="material-symbols-outlined">${icon}</span> ${text}
+      </div>
+    `;
+  }
+
+  function renderResults(columns, rows) {
+    if (!columns.length) {
+      resultsBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Query completed with no tabular result.</td></tr>';
+      return;
+    }
+
+    const headCells = columns.map(column => `<th>${escapeHtml(column)}</th>`).join('');
+    const bodyRows = rows.length ? rows.map(row => {
+      const cells = columns.map(column => `<td>${escapeHtml(row[column] ?? '')}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('') : `<tr><td colspan="${columns.length}" style="text-align: center; color: var(--text-muted);">Query returned no rows.</td></tr>`;
+
+    resultsTable.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody id="results-body">${bodyRows}</tbody>`;
+    resultsBody = document.getElementById('results-body');
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    messageBox.innerHTML = '';
+    resultSummary.textContent = 'Running query...';
+
+    fetch('/admin/workbench/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: queryInput.value })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(res => {
+      if (res.status === 200) {
+        renderMessage('success', res.body.message);
+        resultSummary.textContent = `${res.body.rowcount} row(s) returned`;
+        renderResults(res.body.columns || [], res.body.rows || []);
+      } else {
+        renderMessage('error', res.body.message || 'Query failed.');
+        resultSummary.textContent = 'Query failed';
+      }
+    })
+    .catch(() => {
+      renderMessage('error', 'Something went wrong while running the query.');
+      resultSummary.textContent = 'Query failed';
+    });
+  });
+});
+</script>
+{% endblock %}
