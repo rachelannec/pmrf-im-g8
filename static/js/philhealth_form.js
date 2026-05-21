@@ -7,6 +7,7 @@ const dependentsContainer = document.getElementById('dependents-container');
 const lastName = document.getElementById('last_name');
 const firstName = document.getElementById('first_name');
 const middleName = document.getElementById('middle_name');
+const suffixInput = document.getElementById('suffix');
 const memberNameInput = document.querySelector('input[name="MemberName"]');
 
 const birthDateInput = document.getElementById('birth_date');
@@ -14,7 +15,7 @@ const birthDateInput = document.getElementById('birth_date');
 // Auto-capitalize name fields as the user types
 document.addEventListener('input', (e) => {
     // List the IDs or Names of the fields we want to force to uppercase
-    const uppercaseFields = ['last_name', 'first_name', 'middle_name', 'MotherMaidenName', 'DependentName'];
+    const uppercaseFields = ['last_name', 'first_name', 'middle_name', 'suffix', 'MotherMaidenName', 'SpouseName', 'DependentName'];
     
     if (uppercaseFields.includes(e.target.id) || uppercaseFields.includes(e.target.name)) {
         // Save the cursor position so it doesn't jump to the end of the word
@@ -197,9 +198,17 @@ function updateMemberName() {
     const last = lastName.value.trim();
     const first = firstName.value.trim();
     const middle = middleName.value.trim();
-    memberNameInput.value = [last, first, middle].filter(Boolean).length
-        ? `${last}, ${first}${middle ? ` ${middle}` : ''}`
-        : '';
+    const suffix = suffixInput ? suffixInput.value.trim() : '';
+    // Format: Lastname, Firstname suffix Middlename
+    let nameParts = [];
+    if (last) {
+        let rest = first ? `${first}` : '';
+        if (suffix) rest = rest ? `${rest} ${suffix}` : `${suffix}`;
+        if (middle) rest = rest ? `${rest} ${middle}` : `${middle}`;
+        memberNameInput.value = rest ? `${last}, ${rest}` : `${last}`;
+    } else {
+        memberNameInput.value = [first, suffix, middle].filter(Boolean).join(' ');
+    }
 }
 
 lastName.addEventListener('input', updateMemberName);
