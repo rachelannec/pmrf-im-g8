@@ -33,7 +33,8 @@ pmrf-im-g8/
 │   │   ├── style.css           # Global site styling
 │   │   └── philhealth.css      # PhilHealth form and dashboard styling
 │   ├── js/
-│   │   └── philhealth_form.js  # Registration form submission and input formatting
+│   │   ├── formatters.js       # Shared utility for input formatting & validations
+│   │   └── philhealth_form.js  # Registration form submission and UI logic
 │   └── images/
 │       ├── prism_logo.png      # Portal logo branding
 │       └── prism_bg.png        # Topographic map site background
