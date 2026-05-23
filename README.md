@@ -17,19 +17,30 @@ A small Flask + SQLite app for managing PhilHealth membership registration data.
 pmrf-im-g8/
 ├── app.py                      # Flask app, database setup, and API routes
 ├── philhealth.db               # SQLite database file for saved records
+├── requirements.txt            # Python dependencies list
 ├── templates/                  # Jinja2 HTML templates
-│   ├── base.html               # Shared page layout
-│   └── philhealth_form.html    # Main PhilHealth registration form
-├── static/                     # Static files such as CSS
-│   └── css/
-│       ├── style.css           # Global site styling
-│       └── philhealth.css      # PhilHealth form-specific styling
+│   ├── base.html               # Shared page layout with sidebar navigation
+│   ├── landing.html            # Landing / portal selection page
+│   ├── philhealth_form.html    # Main PhilHealth registration form
+│   ├── member_login.html       # Member login page
+│   ├── member_amendment.html   # Logged-in member details amendment portal
+│   ├── admin_login.html        # Admin portal login page
+│   ├── admin_dashboard.html    # Admin analytics and metrics dashboard
+│   ├── admin_manage.html       # Admin panel to edit/delete members & dependents
+│   └── admin_workbench.html    # Interactive SQL execution panel
+├── static/                     # Static assets (CSS, JS, Images)
+│   ├── css/
+│   │   ├── style.css           # Global site styling
+│   │   └── philhealth.css      # PhilHealth form and dashboard styling
+│   ├── js/
+│   │   └── philhealth_form.js  # Registration form submission and input formatting
+│   └── images/
+│       ├── prism_logo.png      # Portal logo branding
+│       └── prism_bg.png        # Topographic map site background
 ├── NOTES.md                    # SQL notes and database reminders
 ├── README.md                   # Project overview and setup guide
 └── .gitignore                  # Files ignored by Git
 ```
-
-
 
 ## Requirements
 
@@ -70,36 +81,3 @@ http://127.0.0.1:5000
 - `POST /dependents`
 - `GET /membertypes`
 - `POST /membertypes`
-
-## What To Do Next
-
-Suggested follow-up tasks for the project:
-
-1. Display saved output in the UI.
-	- Show submitted registrants in a table or card list below the form.
-	- Include the generated PIN, member name, member type, and timestamp.
-
-2. Improve the UI.
-	- Align fields more closely with the PhilHealth form layout.
-	- Make the page clearer on mobile and desktop.
-
-3. Add light animations.
-	- Fade in cards and form sections on page load.
-	- Add small transitions for buttons, alerts, and dependent rows.
-
-4. Add validation and feedback.
-	- Warn the user if required fields are missing.
-	- Show success and error messages in a cleaner form area.
-
-5. Add print or export support.
-	- Make the form printable.
-	- Optionally add PDF export later.
-
-## Suggestions
-
-If you want the next best improvement, I recommend this order:
-
-1. Show output below the form so users can confirm what was saved.
-2. Polish the UI layout and spacing.
-3. Add subtle animations only after the layout is stable.
-
