@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+<main style="padding-top: 0; max-width: 1180px;">
+  <div class="form-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(0, 103, 47, 0.08), rgba(37, 93, 173, 0.08)); border: 1px solid rgba(37, 93, 173, 0.15);">
+    <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px;">assignment_ind</span>
+          <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">Member Amendment</span>
+        </div>
+        <h1 style="margin-bottom: 10px; color: var(--primary);">Update your PhilHealth details</h1>
+        <p style="max-width: 840px; margin: 0; color: var(--text-main);">Use this portal to amend contact and membership information after signing in with your PIN and password.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <a href="/member/logout" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined">logout</span> Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if message %}
+  <div class="alert alert-{{ message_type }}" style="margin-bottom: 20px;">
+    <span class="material-symbols-outlined">{{ 'check_circle' if message_type != 'error' else 'error' }}</span> {{ message }}
+  </div>
+  {% endif %}
+
+  <section class="form-card" style="margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-top: 0;">Current record</h2>
+    <div class="grid">
+      <div class="col-4 form-group">
+        <label>PhilHealth ID Number (PIN)</label>
+        <input type="text" class="form-control" value="{{ member.PIN }}" readonly>
+      </div>
+      <div class="col-8 form-group">
+        <label>Member Name</label>
+        <input type="text" class="form-control" value="{{ member.MemberName }}" readonly>
+      </div>
+      <div class="col-4 form-group">
+        <label>Birth Date</label>
+        <input type="date" class="form-control" value="{{ member.BirthDate }}" readonly>
+      </div>
+      <div class="col-4 form-group">
+        <label>Sex</label>
+        <input type="text" class="form-control" value="{{ member.Sex }}" readonly>
+      </div>
+      <div class="col-4 form-group">
+        <label>Citizenship</label>
+        <input type="text" class="form-control" value="{{ member.Citizenship }}" readonly>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-card">
+    <h2 class="section-title" style="margin-top: 0;">Editable details</h2>
+    <form method="post" action="/member/amendment">
+      <div class="grid">
+        <div class="col-6 form-group">
+          <label>Spouse Name</label>
+          <input type="text" name="SpouseName" class="form-control" value="{{ member.SpouseName or '' }}">
+        </div>
+        <div class="col-3 form-group">
+          <label>Civil Status *</label>
+          <select name="CivilStatus" class="form-control" required>
+            <option value="Single" {% if member.CivilStatus == 'Single' %}selected{% endif %}>Single</option>
+            <option value="Married" {% if member.CivilStatus == 'Married' %}selected{% endif %}>Married</option>
+            <option value="Widow/er" {% if member.CivilStatus == 'Widow/er' %}selected{% endif %}>Widowed</option>
+            <option value="Annulled" {% if member.CivilStatus == 'Annulled' %}selected{% endif %}>Annulled</option>
+            <option value="Legally Separated" {% if member.CivilStatus == 'Legally Separated' %}selected{% endif %}>Legally Separated</option>
+          </select>
+        </div>
+        <div class="col-3 form-group">
+          <label>Membership Type *</label>
+          <select name="MemberTypeID" class="form-control" required>
+            {% for item in member_types %}
+            <option value="{{ item.MemberTypeID }}" {% if member.MemberTypeID == item.MemberTypeID %}selected{% endif %}>{{ item.MemberTypeID }} - {{ item.MemberType }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 form-group">
+          <label>PhilSys ID</label>
+          <input type="text" name="PhilSysID" class="form-control" value="{{ member.PhilSysID or '' }}" placeholder="XXXX-XXXX-XXXX-XXXX">
+        </div>
+        <div class="col-6 form-group">
+          <label>TIN</label>
+          <input type="text" name="TIN" class="form-control" value="{{ member.TIN or '' }}" placeholder="XXX-XXX-XXX">
+        </div>
+        <div class="col-6 form-group">
+          <label>Permanent Address *</label>
+          <textarea name="PermanentAddress" class="form-control" rows="3" required>{{ member.PermanentAddress }}</textarea>
+        </div>
+        <div class="col-6 form-group">
+          <label>Mailing Address *</label>
+          <textarea name="MailingAddress" class="form-control" rows="3" required>{{ member.MailingAddress }}</textarea>
+        </div>
+        <div class="col-4 form-group">
+          <label>Home Phone</label>
+          <input type="text" name="HomePhone" class="form-control" value="{{ member.HomePhone or '' }}">
+        </div>
+        <div class="col-4 form-group">
+          <label>Mobile Phone *</label>
+          <input type="text" name="MobilePhone" class="form-control" value="{{ member.MobilePhone }}" required>
+        </div>
+        <div class="col-4 form-group">
+          <label>Business Line</label>
+          <input type="text" name="BusinessLine" class="form-control" value="{{ member.BusinessLine or '' }}">
+        </div>
+        <div class="col-12 form-group">
+          <label>E-mail Address *</label>
+          <input type="email" name="EmailAddress" class="form-control" value="{{ member.EmailAddress }}" required>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <div class="security-badge">
+          <span class="material-symbols-outlined">verified_user</span>
+          Changes are tied to your PIN for audit tracking.
+        </div>
+        <button type="submit" class="btn-submit">Save amendment</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

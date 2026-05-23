@@ -5,23 +5,29 @@
         <div class="form-header" style="text-align: center;">
             <span class="material-symbols-outlined" style="font-size: 48px; color: var(--primary); margin-bottom: 12px;">account_circle</span>
             <h1>Member Sign In</h1>
-            <p>View your existing membership records or update profile data.</p>
+            <p>Sign in with your PhilHealth ID and password to update your details.</p>
         </div>
 
         <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 24px 0;">
 
-        <form onsubmit="event.preventDefault();">
+        {% if error_message %}
+        <div class="alert alert-error">
+            <span class="material-symbols-outlined">error</span> {{ error_message }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login/member">
             <div class="form-group" style="margin-bottom: 16px;">
                 <label for="member-pin">PhilHealth ID Number (PIN)</label>
-                <input type="text" id="member-pin" class="form-control" placeholder="PH-XXXXXXXXX-X" autocomplete="off">
+                <input type="text" id="member-pin" name="PIN" class="form-control" placeholder="PH-XXXXXXXXX-X" autocomplete="username" required>
             </div>
             
             <div class="form-group" style="margin-bottom: 24px;">
                 <label for="member-pass">Password</label>
-                <input type="password" id="member-pass" class="form-control" placeholder="Enter password">
+                <input type="password" id="member-pass" name="password" class="form-control" placeholder="Enter password" autocomplete="current-password" required>
             </div>
 
-            <button type="button" class="btn-submit" style="width: 100%;">Sign In</button>
+            <button type="submit" class="btn-submit" style="width: 100%;">Sign In</button>
         </form>
 
         <div style="text-align: center; margin-top: 20px;">

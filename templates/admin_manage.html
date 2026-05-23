@@ -24,88 +24,224 @@
 
   <div id="manage-message"></div>
 
-  <section class="form-card" style="margin-bottom: 28px;">
-    <h2 class="section-title" style="margin-top: 0;">Registrants</h2>
-    <div style="display: grid; gap: 16px;">
+  <section class="form-card">
+    <h2 class="section-title" style="margin-top: 0;">Registrants with Dependents</h2>
+    <div style="display: grid; gap: 18px;">
       {% for row in registrants %}
-      <article style="border: 1px solid var(--border-light); border-radius: 12px; padding: 18px; background: var(--surface);">
-        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
+      <article style="border: 1px solid var(--border-light); border-radius: 14px; padding: 18px; background: var(--surface);">
+        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 14px;">
           <div>
             <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Registrant PIN</div>
             <div style="font-size: 18px; font-weight: 700; color: var(--primary);">{{ row.PIN }}</div>
+            <div style="margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--text-main);">{{ row.MemberName }}</div>
+            <div style="font-size: 13px; color: var(--text-muted);">{{ row.MemberTypeID }} • {{ row.CivilStatus }} • {{ row.MobilePhone }}</div>
           </div>
           <form method="post" action="/admin/registrants/{{ row.PIN }}/delete">
-            <button type="submit" class="btn-draft" style="color: var(--error); border-color: var(--error);">Delete record</button>
+            <button type="submit" class="btn-draft" style="color: var(--error); border-color: var(--error);">Delete registrant</button>
           </form>
         </div>
 
-        <form method="post" action="/admin/registrants/{{ row.PIN }}/update" class="admin-manage-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+        <form method="post" action="/admin/registrants/{{ row.PIN }}/update" class="admin-manage-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px;">
           <input type="hidden" name="PIN" value="{{ row.PIN }}">
-          <input type="text" name="MemberName" class="form-control" placeholder="Member name" value="{{ row.MemberName }}" required>
-          <input type="text" name="MotherMaidenName" class="form-control" placeholder="Mother's maiden name" value="{{ row.MotherMaidenName }}" required>
-          <input type="text" name="SpouseName" class="form-control" placeholder="Spouse name" value="{{ row.SpouseName or '' }}">
-          <input type="date" name="BirthDate" class="form-control" value="{{ row.BirthDate }}" required>
-          <input type="text" name="BirthPlace" class="form-control" placeholder="Birth place" value="{{ row.BirthPlace }}" required>
-          <select name="Sex" class="form-control" required>
-            <option value="Male" {% if row.Sex == 'Male' %}selected{% endif %}>Male</option>
-            <option value="Female" {% if row.Sex == 'Female' %}selected{% endif %}>Female</option>
-          </select>
-          <select name="CivilStatus" class="form-control" required>
-            <option value="Single" {% if row.CivilStatus == 'Single' %}selected{% endif %}>Single</option>
-            <option value="Married" {% if row.CivilStatus == 'Married' %}selected{% endif %}>Married</option>
-            <option value="Widow/er" {% if row.CivilStatus == 'Widow/er' %}selected{% endif %}>Widowed</option>
-            <option value="Annulled" {% if row.CivilStatus == 'Annulled' %}selected{% endif %}>Annulled</option>
-            <option value="Legally Separated" {% if row.CivilStatus == 'Legally Separated' %}selected{% endif %}>Legally Separated</option>
-          </select>
-          <input type="text" name="Citizenship" class="form-control" placeholder="Citizenship" value="{{ row.Citizenship }}" required>
-          <input type="text" name="PhilSysID" class="form-control" placeholder="PhilSys ID" value="{{ row.PhilSysID or '' }}">
-          <input type="text" name="TIN" class="form-control" placeholder="TIN" value="{{ row.TIN or '' }}">
-          <input type="text" name="PermanentAddress" class="form-control" placeholder="Permanent address" value="{{ row.PermanentAddress }}" required>
-          <input type="text" name="MailingAddress" class="form-control" placeholder="Mailing address" value="{{ row.MailingAddress }}" required>
-          <input type="text" name="HomePhone" class="form-control" placeholder="Home phone" value="{{ row.HomePhone or '' }}">
-          <input type="text" name="MobilePhone" class="form-control" placeholder="Mobile phone" value="{{ row.MobilePhone }}" required>
-          <input type="text" name="BusinessLine" class="form-control" placeholder="Business line" value="{{ row.BusinessLine or '' }}">
-          <input type="email" name="EmailAddress" class="form-control" placeholder="Email address" value="{{ row.EmailAddress }}" required>
-          <input type="text" name="MemberTypeID" class="form-control" placeholder="Member type ID" value="{{ row.MemberTypeID }}" required>
-          <button type="submit" class="btn-submit" style="grid-column: 1 / -1; background: var(--secondary);">Save changes</button>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Member name
+            <input type="text" name="MemberName" class="form-control" placeholder="Member name" value="{{ row.MemberName }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Mother's maiden name
+            <input type="text" name="MotherMaidenName" class="form-control" placeholder="Mother's maiden name" value="{{ row.MotherMaidenName }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Spouse name
+            <input type="text" name="SpouseName" class="form-control" placeholder="Spouse name" value="{{ row.SpouseName or '' }}">
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Birth date
+            <input type="date" name="BirthDate" class="form-control" value="{{ row.BirthDate }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Birth place
+            <input type="text" name="BirthPlace" class="form-control" placeholder="Birth place" value="{{ row.BirthPlace }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Sex
+            <select name="Sex" class="form-control" required>
+              <option value="Male" {% if row.Sex == 'Male' %}selected{% endif %}>Male</option>
+              <option value="Female" {% if row.Sex == 'Female' %}selected{% endif %}>Female</option>
+            </select>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Civil status
+            <select name="CivilStatus" class="form-control" required>
+              <option value="Single" {% if row.CivilStatus == 'Single' %}selected{% endif %}>Single</option>
+              <option value="Married" {% if row.CivilStatus == 'Married' %}selected{% endif %}>Married</option>
+              <option value="Widow/er" {% if row.CivilStatus == 'Widow/er' %}selected{% endif %}>Widowed</option>
+              <option value="Annulled" {% if row.CivilStatus == 'Annulled' %}selected{% endif %}>Annulled</option>
+              <option value="Legally Separated" {% if row.CivilStatus == 'Legally Separated' %}selected{% endif %}>Legally Separated</option>
+            </select>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Citizenship
+            <input type="text" name="Citizenship" class="form-control" placeholder="Citizenship" value="{{ row.Citizenship }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            PhilSys ID
+            <input type="text" name="PhilSysID" class="form-control" placeholder="PhilSys ID" value="{{ row.PhilSysID or '' }}">
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            TIN
+            <input type="text" name="TIN" class="form-control" placeholder="TIN" value="{{ row.TIN or '' }}">
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Permanent address
+            <input type="text" name="PermanentAddress" class="form-control" placeholder="Permanent address" value="{{ row.PermanentAddress }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Mailing address
+            <input type="text" name="MailingAddress" class="form-control" placeholder="Mailing address" value="{{ row.MailingAddress }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Home phone
+            <input type="text" name="HomePhone" class="form-control" placeholder="Home phone" value="{{ row.HomePhone or '' }}">
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Mobile phone
+            <input type="text" name="MobilePhone" class="form-control" placeholder="Mobile phone" value="{{ row.MobilePhone }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Business line
+            <input type="text" name="BusinessLine" class="form-control" placeholder="Business line" value="{{ row.BusinessLine or '' }}">
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Email address
+            <input type="email" name="EmailAddress" class="form-control" placeholder="Email address" value="{{ row.EmailAddress }}" required>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+            Member type ID
+            <input type="text" name="MemberTypeID" class="form-control" placeholder="Member type ID" value="{{ row.MemberTypeID }}" required>
+          </label>
+          <button type="submit" class="btn-submit" style="grid-column: 1 / -1; background: var(--secondary);">Save registrant changes</button>
         </form>
+
+        <div style="border-top: 1px solid var(--border-light); padding-top: 16px; margin-top: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Dependents</div>
+              <div style="font-size: 14px; color: var(--text-muted);">All dependents linked to this registrant</div>
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 700;">{{ dependents_by_pin.get(row.PIN, []) | length }} record(s)</div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <button
+              type="button"
+              class="btn-draft"
+              data-add-dependent-toggle="{{ row.PIN | replace(' ', '_') | replace('-', '_') }}"
+              style="display: inline-flex; align-items: center; gap: 8px; border-color: var(--primary); color: var(--primary);"
+            >
+              <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+              Add dependent
+            </button>
+
+            <form
+              method="post"
+              action="/dependents"
+              id="add-dependent-{{ row.PIN | replace(' ', '_') | replace('-', '_') }}"
+              style="display: none; margin-top: 12px; border: 1px solid rgba(0, 103, 47, 0.16); border-radius: 12px; padding: 14px; background: rgba(0, 103, 47, 0.03);"
+            >
+              <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Add dependent</div>
+                  <div style="font-size: 13px; color: var(--text-muted);">Create a new dependent for PIN {{ row.PIN }}</div>
+                </div>
+                <input type="hidden" name="PIN" value="{{ row.PIN }}">
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Dependent name
+                  <input type="text" name="DependentName" class="form-control" placeholder="Last name, first name, middle initial" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Relationship
+                  <input type="text" name="Relationship" class="form-control" placeholder="Spouse, child, parent" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Birth date
+                  <input type="date" name="DependentBirthDate" class="form-control" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Citizenship
+                  <input type="text" name="DependentCitizenship" class="form-control" placeholder="Filipino" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  With PWD?
+                  <select name="DependentPWD" class="form-control" required>
+                    <option value="No" selected>No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </label>
+                <button type="submit" class="btn-submit" style="grid-column: 1 / -1; background: var(--primary);">Add dependent</button>
+              </div>
+            </form>
+          </div>
+
+          {% set linked_dependents = dependents_by_pin.get(row.PIN, []) %}
+          {% if linked_dependents %}
+          <div style="display: grid; gap: 12px;">
+            {% for dep in linked_dependents %}
+            <article style="border: 1px solid rgba(37, 93, 173, 0.14); border-radius: 12px; padding: 14px; background: rgba(37, 93, 173, 0.03);">
+              <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
+                <div>
+                  <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Dependent ID</div>
+                  <div style="font-size: 16px; font-weight: 700; color: var(--secondary);">{{ dep.DependentID }}</div>
+                </div>
+                <form method="post" action="/admin/dependents/{{ dep.DependentID }}/delete">
+                  <button type="submit" class="btn-draft" style="color: var(--error); border-color: var(--error);">Delete dependent</button>
+                </form>
+              </div>
+
+              <form method="post" action="/admin/dependents/{{ dep.DependentID }}/update" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  PIN
+                  <input type="text" name="PIN" class="form-control" placeholder="PIN" value="{{ dep.PIN }}" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Dependent name
+                  <input type="text" name="DependentName" class="form-control" placeholder="Dependent name" value="{{ dep.DependentName }}" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Relationship
+                  <input type="text" name="Relationship" class="form-control" placeholder="Relationship" value="{{ dep.Relationship }}" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Birth date
+                  <input type="date" name="DependentBirthDate" class="form-control" value="{{ dep.DependentBirthDate }}" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  Citizenship
+                  <input type="text" name="DependentCitizenship" class="form-control" placeholder="Citizenship" value="{{ dep.DependentCitizenship }}" required>
+                </label>
+                <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                  With PWD?
+                  <select name="DependentPWD" class="form-control" required>
+                    <option value="No" {% if dep.DependentPWD == 'No' %}selected{% endif %}>No</option>
+                    <option value="Yes" {% if dep.DependentPWD == 'Yes' %}selected{% endif %}>Yes</option>
+                  </select>
+                </label>
+                <button type="submit" class="btn-submit" style="grid-column: 1 / -1; background: var(--primary);">Save dependent changes</button>
+              </form>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div style="text-align: center; color: var(--text-muted); padding: 18px 0; border: 1px dashed var(--border-light); border-radius: 12px; background: rgba(0, 0, 0, 0.015);">
+            No dependents linked to this registrant.
+          </div>
+          {% endif %}
+        </div>
       </article>
       {% else %}
       <div style="text-align: center; color: var(--text-muted); padding: 24px 0;">No registrants available.</div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <section class="form-card">
-    <h2 class="section-title" style="margin-top: 0;">Dependents</h2>
-    <div style="display: grid; gap: 16px;">
-      {% for row in dependents %}
-      <article style="border: 1px solid var(--border-light); border-radius: 12px; padding: 18px; background: var(--surface);">
-        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
-          <div>
-            <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Dependent ID</div>
-            <div style="font-size: 18px; font-weight: 700; color: var(--secondary);">{{ row.DependentID }}</div>
-          </div>
-          <form method="post" action="/admin/dependents/{{ row.DependentID }}/delete">
-            <button type="submit" class="btn-draft" style="color: var(--error); border-color: var(--error);">Delete record</button>
-          </form>
-        </div>
-
-        <form method="post" action="/admin/dependents/{{ row.DependentID }}/update" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-          <input type="text" name="PIN" class="form-control" placeholder="PIN" value="{{ row.PIN }}" required>
-          <input type="text" name="DependentName" class="form-control" placeholder="Dependent name" value="{{ row.DependentName }}" required>
-          <input type="text" name="Relationship" class="form-control" placeholder="Relationship" value="{{ row.Relationship }}" required>
-          <input type="date" name="DependentBirthDate" class="form-control" value="{{ row.DependentBirthDate }}" required>
-          <input type="text" name="DependentCitizenship" class="form-control" placeholder="Citizenship" value="{{ row.DependentCitizenship }}" required>
-          <select name="DependentPWD" class="form-control" required>
-            <option value="No" {% if row.DependentPWD == 'No' %}selected{% endif %}>No</option>
-            <option value="Yes" {% if row.DependentPWD == 'Yes' %}selected{% endif %}>Yes</option>
-          </select>
-          <button type="submit" class="btn-submit" style="grid-column: 1 / -1; background: var(--primary);">Save changes</button>
-        </form>
-      </article>
-      {% else %}
-      <div style="text-align: center; color: var(--text-muted); padding: 24px 0;">No dependents available.</div>
       {% endfor %}
     </div>
   </section>
@@ -114,6 +250,97 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const messageBox = document.getElementById('manage-message');
+
+  function formatMobileNumber(value) {
+    let numbers = String(value || '').replace(/\D/g, '');
+
+    if (numbers.startsWith('63')) {
+      numbers = numbers.slice(2);
+    }
+    if (numbers.startsWith('0')) {
+      numbers = numbers.slice(1);
+    }
+
+    numbers = numbers.slice(0, 10);
+    if (!numbers) {
+      return '';
+    }
+
+    let formatted = '+63';
+    if (numbers.length > 0) formatted += `-${numbers.slice(0, 3)}`;
+    if (numbers.length > 3) formatted += `-${numbers.slice(3, 6)}`;
+    if (numbers.length > 6) formatted += `-${numbers.slice(6, 10)}`;
+
+    return formatted;
+  }
+
+  function formatPhilsysId(value) {
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 16);
+    let formatted = '';
+
+    for (let index = 0; index < digits.length; index += 1) {
+      if (index > 0 && index % 4 === 0) {
+        formatted += '-';
+      }
+      formatted += digits[index];
+    }
+
+    return formatted;
+  }
+
+  function formatTin(value) {
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 12);
+    let formatted = '';
+
+    for (let index = 0; index < digits.length; index += 1) {
+      if (index > 0 && index % 3 === 0) {
+        formatted += '-';
+      }
+      formatted += digits[index];
+    }
+
+    return formatted;
+  }
+
+  function bindFormatter(selector, formatter) {
+    document.querySelectorAll(selector).forEach(input => {
+      input.value = formatter(input.value);
+      input.addEventListener('input', () => {
+        input.value = formatter(input.value);
+      });
+    });
+  }
+
+  function bindUppercase(selector) {
+    document.querySelectorAll(selector).forEach(input => {
+      input.value = String(input.value || '').toUpperCase();
+      input.addEventListener('input', () => {
+        input.value = input.value.toUpperCase();
+      });
+    });
+  }
+
+  bindFormatter('input[name="MobilePhone"], input[name="HomePhone"]', formatMobileNumber);
+  bindFormatter('input[name="PhilSysID"]', formatPhilsysId);
+  bindFormatter('input[name="TIN"]', formatTin);
+  bindUppercase('input[name="MemberName"], input[name="MotherMaidenName"], input[name="SpouseName"], input[name="DependentName"]');
+
+  document.querySelectorAll('[data-add-dependent-toggle]').forEach(button => {
+    const targetId = button.getAttribute('data-add-dependent-toggle');
+    const targetForm = document.getElementById(`add-dependent-${targetId}`);
+
+    if (!targetForm) {
+      return;
+    }
+
+    button.addEventListener('click', () => {
+      const isVisible = targetForm.style.display !== 'none';
+      targetForm.style.display = isVisible ? 'none' : 'block';
+      button.innerHTML = isVisible
+        ? '<span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span> Add dependent'
+        : '<span class="material-symbols-outlined" style="font-size: 18px;">remove_circle</span> Hide dependent form';
+    });
+  });
 
   function showMessage(type, text) {
     const icon = type === 'error' ? 'error' : 'check_circle';
@@ -140,6 +367,19 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', async function(event) {
       event.preventDefault();
+
+      const actionPath = form.getAttribute('action') || '';
+      const isDelete = actionPath.includes('/delete');
+      const isUpdate = actionPath.includes('/update');
+
+      if (isDelete || isUpdate) {
+        const target = isDelete ? 'delete' : 'update';
+        const confirmed = window.confirm(`Are you sure you want to ${target} this record?`);
+        if (!confirmed) {
+          return;
+        }
+      }
+
       try {
         const data = await postForm(form);
         showMessage('success', data.message || 'Saved.');

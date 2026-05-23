@@ -4,8 +4,10 @@ from pathlib import Path
 import random
 import sqlite3
 from functools import wraps
+import json
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key"
@@ -60,6 +62,15 @@ def get_db_connection():
 	return connection
 
 
+def ensure_column_exists(connection, table_name, column_name, column_definition):
+	existing_columns = {
+		row[1]
+		for row in connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+	}
+	if column_name not in existing_columns:
+		connection.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_definition}")
+
+
 def init_db():
 	with get_db_connection() as connection:
 		# table: registrant_details 
@@ -84,6 +95,7 @@ def init_db():
 				MobilePhone VARCHAR(16) NOT NULL,
 				BusinessLine VARCHAR(20),
 				EmailAddress VARCHAR(100) NOT NULL,
+				MemberPasswordHash TEXT,
 				MemberTypeID CHAR(4) NOT NULL,
 				created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 			)
@@ -114,6 +126,7 @@ def init_db():
 			)
 			"""
 		)
+		ensure_column_exists(connection, "registrant_details", "MemberPasswordHash", "MemberPasswordHash TEXT")
 		connection.commit()
 
 
@@ -169,10 +182,13 @@ def get_admin_manage_data():
 		dependents = conn.execute(
 			"SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at FROM dependent_details ORDER BY DependentID DESC"
 		).fetchall()
+		dependents_by_pin = {}
+		for dependent in dependents:
+			dependents_by_pin.setdefault(dependent["PIN"], []).append(dict(dependent))
 
 	return {
 		"registrants": [dict(row) for row in registrants],
-		"dependents": [dict(row) for row in dependents],
+		"dependents_by_pin": dependents_by_pin,
 	}
 
 
@@ -295,6 +311,82 @@ def admin_update_registrant(pin):
 			conn.commit()
 			if cursor.rowcount == 0:
 				return jsonify({"ok": False, "message": "Registrant not found."}), 404
+
+			# --- Dependent handling: support JSON list or form field named 'dependents' ---
+			# Expecting dependents as a JSON array of objects with keys:
+			# DependentID (optional), DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD
+			dependents_raw = payload.get("dependents") if isinstance(payload, dict) else None
+			deleted_raw = payload.get("deleted_dependent_ids") if isinstance(payload, dict) else None
+			dependents_list = []
+			if dependents_raw:
+				if isinstance(dependents_raw, str):
+					try:
+						dependents_list = json.loads(dependents_raw)
+					except Exception:
+						dependents_list = []
+				elif isinstance(dependents_raw, list):
+					dependents_list = dependents_raw
+
+			# parse deleted ids
+			deleted_ids = []
+			if deleted_raw:
+				if isinstance(deleted_raw, str):
+					try:
+						deleted_ids = json.loads(deleted_raw)
+					except Exception:
+						# comma-separated fallback
+						deleted_ids = [int(x) for x in deleted_raw.split(",") if x.strip().isdigit()]
+				elif isinstance(deleted_raw, list):
+					deleted_ids = [int(x) for x in deleted_raw]
+
+			# perform deletions first
+			for did in deleted_ids:
+				conn.execute("DELETE FROM dependent_details WHERE DependentID = ? AND PIN = ?", (did, pin))
+
+			# upsert dependents
+			for d in dependents_list:
+				if not isinstance(d, dict):
+					continue
+				dep_id = d.get("DependentID") or d.get("DependentId") or None
+				name = (d.get("DependentName") or d.get("Dependentname") or "").strip()
+				rel = (d.get("Relationship") or d.get("relationship") or "").strip()
+				bdate = (d.get("DependentBirthDate") or d.get("DependentBirthdate") or "").strip()
+				cit = (d.get("DependentCitizenship") or d.get("DependentCitizenship") or "").strip()
+				pwd = (d.get("DependentPWD") or d.get("DependentPwd") or "No").strip()
+
+				if not all([name, rel, bdate, cit]):
+					# skip incomplete dependent rows
+					continue
+
+				if dep_id:
+					try:
+						dep_cursor = conn.execute(
+							"""
+							UPDATE dependent_details
+							SET PIN = ?, DependentName = ?, Relationship = ?, DependentBirthDate = ?, DependentCitizenship = ?, DependentPWD = ?
+							WHERE DependentID = ?
+						""",
+						(pin, name, rel, bdate, cit, pwd, dep_id),
+					)
+						if dep_cursor.rowcount == 0:
+							conn.execute(
+								"INSERT INTO dependent_details (PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD) VALUES (?, ?, ?, ?, ?, ?)",
+								(pin, name, rel, bdate, cit, pwd),
+							)
+					except sqlite3.IntegrityError:
+						# skip invalid dependent entries
+						continue
+				else:
+					# insert new dependent
+					try:
+						conn.execute(
+							"INSERT INTO dependent_details (PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD) VALUES (?, ?, ?, ?, ?, ?)",
+							(pin, name, rel, bdate, cit, pwd),
+						)
+					except sqlite3.IntegrityError:
+						continue
+
+			conn.commit()
 	except sqlite3.IntegrityError as error:
 		return jsonify({"ok": False, "message": str(error)}), 400
 
@@ -412,10 +504,147 @@ def admin_logout():
 	return redirect(url_for("admin_login"))
 
 
-@app.route("/login/member")
+@app.route("/login/member", methods=["GET", "POST"])
 def member_login():
-    init_db()
-    return render_template("member_login.html")
+	init_db()
+	if session.get("member_pin"):
+		return redirect(url_for("member_amendment"))
+
+	error_message = None
+	if request.method == "POST":
+		payload = request.get_json(silent=True) or request.form
+		pin = (payload.get("PIN") or payload.get("pin") or "").strip()
+		password = (payload.get("password") or payload.get("Password") or "").strip()
+
+		if not pin or not password:
+			error_message = "Enter both your PhilHealth ID number and password."
+		else:
+			with get_db_connection() as conn:
+				member = conn.execute(
+					"SELECT PIN, MemberPasswordHash FROM registrant_details WHERE PIN = ?",
+					(pin,),
+				).fetchone()
+			if member and member["MemberPasswordHash"] and check_password_hash(member["MemberPasswordHash"], password):
+				session["member_pin"] = member["PIN"]
+				return redirect(url_for("member_amendment"))
+			error_message = "Invalid PIN or password."
+
+	return render_template("member_login.html", error_message=error_message)
+
+
+def member_required(view_func):
+	@wraps(view_func)
+	def wrapped_view(*args, **kwargs):
+		if not session.get("member_pin"):
+			return redirect(url_for("member_login"))
+		return view_func(*args, **kwargs)
+
+	return wrapped_view
+
+
+@app.route("/member/logout")
+def member_logout():
+	session.pop("member_pin", None)
+	return redirect(url_for("member_login"))
+
+
+@app.route("/member/amendment", methods=["GET", "POST"])
+@member_required
+def member_amendment():
+	init_db()
+	pin = session.get("member_pin")
+	message = None
+	message_type = "success"
+
+	with get_db_connection() as conn:
+		member = conn.execute(
+			"""
+			SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex,
+			       CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress,
+			       HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
+			FROM registrant_details
+			WHERE PIN = ?
+			""",
+			(pin,),
+		).fetchone()
+		member_types = conn.execute(
+			"SELECT MemberTypeID, MemberType FROM membership_details ORDER BY MemberTypeID"
+		).fetchall()
+
+	if member is None:
+		session.pop("member_pin", None)
+		return redirect(url_for("member_login"))
+
+	if request.method == "POST":
+		editable_fields = {
+			"SpouseName": (request.form.get("SpouseName") or "").strip(),
+			"PhilSysID": (request.form.get("PhilSysID") or "").strip() or None,
+			"TIN": (request.form.get("TIN") or "").strip() or None,
+			"PermanentAddress": (request.form.get("PermanentAddress") or "").strip(),
+			"MailingAddress": (request.form.get("MailingAddress") or "").strip(),
+			"HomePhone": (request.form.get("HomePhone") or "").strip(),
+			"MobilePhone": (request.form.get("MobilePhone") or "").strip(),
+			"BusinessLine": (request.form.get("BusinessLine") or "").strip(),
+			"EmailAddress": (request.form.get("EmailAddress") or "").strip(),
+			"CivilStatus": (request.form.get("CivilStatus") or "").strip(),
+			"Citizenship": (request.form.get("Citizenship") or "").strip(),
+			"MemberTypeID": (request.form.get("MemberTypeID") or "").strip(),
+		}
+
+		required = [editable_fields["PermanentAddress"], editable_fields["MailingAddress"], editable_fields["MobilePhone"], editable_fields["EmailAddress"], editable_fields["CivilStatus"], editable_fields["Citizenship"], editable_fields["MemberTypeID"]]
+		if not all(required):
+			message = "Missing required fields for the amendment update."
+			message_type = "error"
+		else:
+			with get_db_connection() as conn:
+				cursor = conn.execute(
+					"""
+					UPDATE registrant_details
+					SET SpouseName = ?, PhilSysID = ?, TIN = ?, PermanentAddress = ?, MailingAddress = ?,
+						HomePhone = ?, MobilePhone = ?, BusinessLine = ?, EmailAddress = ?, CivilStatus = ?,
+						Citizenship = ?, MemberTypeID = ?
+					WHERE PIN = ?
+					""",
+					(
+						editable_fields["SpouseName"] or None,
+						editable_fields["PhilSysID"],
+						editable_fields["TIN"],
+						editable_fields["PermanentAddress"],
+						editable_fields["MailingAddress"],
+						editable_fields["HomePhone"] or None,
+						editable_fields["MobilePhone"],
+						editable_fields["BusinessLine"] or None,
+						editable_fields["EmailAddress"],
+						editable_fields["CivilStatus"],
+						editable_fields["Citizenship"],
+						editable_fields["MemberTypeID"],
+						pin,
+					),
+				)
+				conn.commit()
+				if cursor.rowcount == 0:
+					message = "Member record not found."
+					message_type = "error"
+				else:
+					message = "Your PhilHealth amendment details were updated."
+					member = conn.execute(
+						"""
+						SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex,
+						       CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress,
+						       HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
+						FROM registrant_details
+						WHERE PIN = ?
+						""",
+						(pin,),
+					).fetchone()
+
+	return render_template(
+		"member_amendment.html",
+		member=dict(member),
+		member_types=[dict(row) for row in member_types],
+		message=message,
+		message_type=message_type,
+	)
 
 
 @app.route("/registrants", methods=["GET", "POST"])
@@ -428,6 +657,7 @@ def registrants():
 
 		pin = (payload.get("PIN") or payload.get("pin") or "").strip()
 		member_name = (payload.get("MemberName") or payload.get("membername") or "").strip()
+		member_password = (payload.get("MemberPassword") or payload.get("memberpassword") or "").strip()
 		mother = (payload.get("MotherMaidenName") or payload.get("mothermaidenname") or "").strip()
 		spouse = (payload.get("SpouseName") or payload.get("spousename") or "").strip()
 		birthdate = (payload.get("BirthDate") or payload.get("birthdate") or "").strip()
@@ -445,7 +675,7 @@ def registrants():
 		email = (payload.get("EmailAddress") or payload.get("emailaddress") or "").strip()
 		mtype = (payload.get("MemberTypeID") or payload.get("membertypeid") or "").strip()
 
-		required = [member_name, birthdate, birthplace, sex, civil, citizenship, perm_addr, mail_addr, mobile, email, mtype]
+		required = [member_name, member_password, birthdate, birthplace, sex, civil, citizenship, perm_addr, mail_addr, mobile, email, mtype]
 		if not all(required):
 			return jsonify({"ok": False, "message": "Missing required fields"}), 400
 
@@ -455,18 +685,19 @@ def registrants():
 					pin = generate_pin(conn)
 				if not mother:
 					mother = "N/A"
+				password_hash = generate_password_hash(member_password)
 				conn.execute(
 					"""
 					INSERT INTO registrant_details (
 						PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace,
 						Sex, CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress,
-						MailingAddress, HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID
-					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						MailingAddress, HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberPasswordHash, MemberTypeID
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					""",
 					(
 						pin, member_name, mother, spouse, birthdate, birthplace,
 						sex, civil, citizenship, philsys, tin, perm_addr,
-						mail_addr, home, mobile, business, email, mtype,
+						mail_addr, home, mobile, business, email, password_hash, mtype,
 					),
 				)
 				conn.commit()
