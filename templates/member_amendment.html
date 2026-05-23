@@ -80,9 +80,21 @@
         <div class="col-6 form-group">
           <label>Membership Type *</label>
           <select name="MemberTypeID" class="form-control" required>
-            {% for item in member_types %}
-            <option value="{{ item.MemberTypeID }}" {% if member.MemberTypeID == item.MemberTypeID %}selected{% endif %}>{{ item.MemberTypeID }} - {{ item.MemberType }}</option>
-            {% endfor %}
+            <optgroup label="Direct Contributor">
+              {% for item in member_types %}
+                {% if item.MemberTypeID.startswith('D') or item.MemberTypeID.startswith('d') %}
+                  <option value="{{ item.MemberTypeID }}" {% if member.MemberTypeID == item.MemberTypeID %}selected{% endif %}>{{ item.MemberType }}</option>
+                {% endif %}
+              {% endfor %}
+            </optgroup>
+
+            <optgroup label="Indirect Contributor">
+              {% for item in member_types %}
+                {% if item.MemberTypeID.startswith('I') or item.MemberTypeID.startswith('i') %}
+                  <option value="{{ item.MemberTypeID }}" {% if member.MemberTypeID == item.MemberTypeID %}selected{% endif %}>{{ item.MemberType }}</option>
+                {% endif %}
+              {% endfor %}
+            </optgroup>
           </select>
         </div>
         <div class="col-6 form-group">
