@@ -365,7 +365,8 @@ form.addEventListener('submit', async (e) => {
 
         // Friendly label: keep 'PIN' uppercase, otherwise split camelCase
         let readableKey = key === 'PIN' ? 'PIN' : key.replace(/([A-Z])/g, ' $1').trim();
-        summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${value}</div>`;
+        const displayValue = key === 'MemberPassword' ? '••••••••' : value;
+        summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${displayValue}</div>`;
     }
     
     reviewDataContainer.innerHTML = summaryHTML;
