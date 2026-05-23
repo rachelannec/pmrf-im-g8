@@ -117,9 +117,6 @@
         </div>
 
         <div style="display: flex; flex-direction: column; padding: 20px 0;">
-            <a href="/" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
-                <span class="material-symbols-outlined" style="color: var(--primary);">login</span> Log In
-            </a>
             {% if session.get('admin_user') %}
             <a href="/admin/dashboard" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
                 <span class="material-symbols-outlined" style="color: var(--secondary);">dashboard</span> Admin Dashboard
@@ -132,6 +129,17 @@
             </a>
             <a href="/admin/logout" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
                 <span class="material-symbols-outlined" style="color: var(--error);">logout</span> Logout
+            </a>
+            {% elif session.get('member_pin') %}
+            <a href="/member/amendment" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--primary);">assignment_ind</span> Update Details
+            </a>
+            <a href="/member/logout" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--error);">logout</span> Logout
+            </a>
+            {% else %}
+            <a href="/" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
+                <span class="material-symbols-outlined" style="color: var(--primary);">login</span> Log In
             </a>
             {% endif %}
             <a href="#" class="sidebar-link" style="display: flex; align-items: center; gap: 14px; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 16px; transition: background 0.2s, color 0.2s;">
