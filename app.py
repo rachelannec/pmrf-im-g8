@@ -585,6 +585,20 @@ def member_amendment():
 	message = None
 	message_type = "success"
 
+	def calculate_age(birth_date_string):
+		from datetime import date, datetime
+
+		try:
+			birth_date = datetime.strptime(birth_date_string, "%Y-%m-%d").date()
+		except ValueError:
+			return None
+
+		today = date.today()
+		age = today.year - birth_date.year
+		if (today.month, today.day) < (birth_date.month, birth_date.day):
+			age -= 1
+		return age
+
 	with get_db_connection() as conn:
 		member = conn.execute(
 			"""
@@ -599,78 +613,176 @@ def member_amendment():
 		member_types = conn.execute(
 			"SELECT MemberTypeID, MemberType FROM membership_details ORDER BY MemberTypeID"
 		).fetchall()
+		dependents = conn.execute(
+			"""
+			SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at
+			FROM dependent_details
+			WHERE PIN = ?
+			ORDER BY DependentID DESC
+			""",
+			(pin,),
+		).fetchall()
 
 	if member is None:
 		session.pop("member_pin", None)
 		return redirect(url_for("member_login"))
 
 	if request.method == "POST":
-		editable_fields = {
-			"SpouseName": (request.form.get("SpouseName") or "").strip(),
-			"PhilSysID": (request.form.get("PhilSysID") or "").strip() or None,
-			"TIN": (request.form.get("TIN") or "").strip() or None,
-			"PermanentAddress": (request.form.get("PermanentAddress") or "").strip(),
-			"MailingAddress": (request.form.get("MailingAddress") or "").strip(),
-			"HomePhone": (request.form.get("HomePhone") or "").strip(),
-			"MobilePhone": (request.form.get("MobilePhone") or "").strip(),
-			"BusinessLine": (request.form.get("BusinessLine") or "").strip(),
-			"EmailAddress": (request.form.get("EmailAddress") or "").strip(),
-			"CivilStatus": (request.form.get("CivilStatus") or "").strip(),
-			"Citizenship": (request.form.get("Citizenship") or "").strip(),
-			"MemberTypeID": (request.form.get("MemberTypeID") or "").strip(),
-		}
+		action = (request.form.get("DependentAction") or "").strip().lower()
 
-		required = [editable_fields["PermanentAddress"], editable_fields["MailingAddress"], editable_fields["MobilePhone"], editable_fields["EmailAddress"], editable_fields["CivilStatus"], editable_fields["Citizenship"], editable_fields["MemberTypeID"]]
-		if not all(required):
-			message = "Missing required fields for the amendment update."
-			message_type = "error"
-		else:
-			with get_db_connection() as conn:
-				cursor = conn.execute(
+		if action in {"add", "update"}:
+			dependent_name = (request.form.get("DependentName") or "").strip()
+			relationship = (request.form.get("Relationship") or "").strip()
+			dependent_birth_date = (request.form.get("DependentBirthDate") or "").strip()
+			dependent_citizenship = (request.form.get("DependentCitizenship") or "").strip()
+			dependent_pwd = (request.form.get("DependentPWD") or "No").strip() or "No"
+
+			if relationship.lower() == "child":
+				child_age = calculate_age(dependent_birth_date)
+				if child_age is None or child_age >= 21:
+					message = "Child dependents must be below 21 years old."
+					message_type = "error"
+					return render_template(
+						"member_amendment.html",
+						member=dict(member),
+						member_types=[dict(row) for row in member_types],
+						dependents=[dict(row) for row in dependents],
+						message=message,
+						message_type=message_type,
+					)
+
+			if not all([dependent_name, relationship, dependent_birth_date, dependent_citizenship]):
+				message = "Missing required fields for the dependent update."
+				message_type = "error"
+			else:
+				with get_db_connection() as conn:
+					if action == "add":
+						conn.execute(
+							"""
+							INSERT INTO dependent_details (PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD)
+							VALUES (?, ?, ?, ?, ?, ?)
+							""",
+							(pin, dependent_name, relationship, dependent_birth_date, dependent_citizenship, dependent_pwd),
+						)
+						message = "Dependent added successfully."
+					else:
+						dependent_id = (request.form.get("DependentID") or "").strip()
+						if not dependent_id.isdigit():
+							message = "Missing dependent ID for update."
+							message_type = "error"
+						else:
+							cursor = conn.execute(
+								"""
+								UPDATE dependent_details
+								SET DependentName = ?, Relationship = ?, DependentBirthDate = ?, DependentCitizenship = ?, DependentPWD = ?
+								WHERE DependentID = ? AND PIN = ?
+								""",
+								(dependent_name, relationship, dependent_birth_date, dependent_citizenship, dependent_pwd, int(dependent_id), pin),
+							)
+							if cursor.rowcount == 0:
+								message = "Dependent record not found."
+								message_type = "error"
+							else:
+								message = "Dependent updated successfully."
+
+					conn.commit()
+
+				member = conn.execute(
 					"""
-					UPDATE registrant_details
-					SET SpouseName = ?, PhilSysID = ?, TIN = ?, PermanentAddress = ?, MailingAddress = ?,
-						HomePhone = ?, MobilePhone = ?, BusinessLine = ?, EmailAddress = ?, CivilStatus = ?,
-						Citizenship = ?, MemberTypeID = ?
+					SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex,
+					       CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress,
+					       HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
+					FROM registrant_details
 					WHERE PIN = ?
 					""",
-					(
-						editable_fields["SpouseName"] or None,
-						editable_fields["PhilSysID"],
-						editable_fields["TIN"],
-						editable_fields["PermanentAddress"],
-						editable_fields["MailingAddress"],
-						editable_fields["HomePhone"] or None,
-						editable_fields["MobilePhone"],
-						editable_fields["BusinessLine"] or None,
-						editable_fields["EmailAddress"],
-						editable_fields["CivilStatus"],
-						editable_fields["Citizenship"],
-						editable_fields["MemberTypeID"],
-						pin,
-					),
-				)
-				conn.commit()
-				if cursor.rowcount == 0:
-					message = "Member record not found."
-					message_type = "error"
-				else:
-					message = "Your PhilHealth amendment details were updated."
-					member = conn.execute(
+					(pin,),
+				).fetchone()
+				dependents = conn.execute(
+					"""
+					SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at
+					FROM dependent_details
+					WHERE PIN = ?
+					ORDER BY DependentID DESC
+					""",
+					(pin,),
+				).fetchall()
+		elif not action:
+			editable_fields = {
+				"SpouseName": (request.form.get("SpouseName") or "").strip(),
+				"PhilSysID": (request.form.get("PhilSysID") or "").strip() or None,
+				"TIN": (request.form.get("TIN") or "").strip() or None,
+				"PermanentAddress": (request.form.get("PermanentAddress") or "").strip(),
+				"MailingAddress": (request.form.get("MailingAddress") or "").strip(),
+				"HomePhone": (request.form.get("HomePhone") or "").strip(),
+				"MobilePhone": (request.form.get("MobilePhone") or "").strip(),
+				"BusinessLine": (request.form.get("BusinessLine") or "").strip(),
+				"EmailAddress": (request.form.get("EmailAddress") or "").strip(),
+				"CivilStatus": (request.form.get("CivilStatus") or "").strip(),
+				"Citizenship": (request.form.get("Citizenship") or "").strip(),
+				"MemberTypeID": (request.form.get("MemberTypeID") or "").strip(),
+			}
+
+			required = [editable_fields["PermanentAddress"], editable_fields["MailingAddress"], editable_fields["MobilePhone"], editable_fields["EmailAddress"], editable_fields["CivilStatus"], editable_fields["Citizenship"], editable_fields["MemberTypeID"]]
+			if not all(required):
+				message = "Missing required fields for the amendment update."
+				message_type = "error"
+			else:
+				with get_db_connection() as conn:
+					cursor = conn.execute(
 						"""
-						SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex,
-						       CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress,
-						       HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
-						FROM registrant_details
+						UPDATE registrant_details
+						SET SpouseName = ?, PhilSysID = ?, TIN = ?, PermanentAddress = ?, MailingAddress = ?,
+							HomePhone = ?, MobilePhone = ?, BusinessLine = ?, EmailAddress = ?, CivilStatus = ?,
+							Citizenship = ?, MemberTypeID = ?
 						WHERE PIN = ?
 						""",
-						(pin,),
-					).fetchone()
+						(
+							editable_fields["SpouseName"] or None,
+							editable_fields["PhilSysID"],
+							editable_fields["TIN"],
+							editable_fields["PermanentAddress"],
+							editable_fields["MailingAddress"],
+							editable_fields["HomePhone"] or None,
+							editable_fields["MobilePhone"],
+							editable_fields["BusinessLine"] or None,
+							editable_fields["EmailAddress"],
+							editable_fields["CivilStatus"],
+							editable_fields["Citizenship"],
+							editable_fields["MemberTypeID"],
+							pin,
+						),
+					)
+					conn.commit()
+					if cursor.rowcount == 0:
+						message = "Member record not found."
+						message_type = "error"
+					else:
+						message = "Your PhilHealth amendment details were updated."
+						member = conn.execute(
+							"""
+							SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex,
+							       CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress,
+							       HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
+							FROM registrant_details
+							WHERE PIN = ?
+							""",
+							(pin,),
+						).fetchone()
+						dependents = conn.execute(
+							"""
+							SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at
+							FROM dependent_details
+							WHERE PIN = ?
+							ORDER BY DependentID DESC
+							""",
+							(pin,),
+						).fetchall()
 
 	return render_template(
 		"member_amendment.html",
 		member=dict(member),
 		member_types=[dict(row) for row in member_types],
+		dependents=[dict(row) for row in dependents],
 		message=message,
 		message_type=message_type,
 	)

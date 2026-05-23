@@ -57,7 +57,7 @@
       <div class="grid">
         <div class="col-6 form-group">
           <label>Spouse Name</label>
-          <input type="text" name="SpouseName" class="form-control" value="{{ member.SpouseName or '' }}">
+          <input type="text" name="SpouseName" class="form-control dependent-uppercase" value="{{ member.SpouseName or '' }}">
         </div>
         <div class="col-3 form-group">
           <label>Civil Status *</label>
@@ -120,5 +120,214 @@
       </div>
     </form>
   </section>
+
+  <section class="form-card" style="margin-top: 24px;">
+    <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
+      <div>
+        <h2 class="section-title" style="margin-top: 0; margin-bottom: 8px;">Dependents</h2>
+        <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Add a new dependent or update an existing dependent record.</p>
+      </div>
+      <button type="button" id="toggle-dependent-form" class="btn-draft" style="display: inline-flex; align-items: center; gap: 8px; border-color: var(--primary); color: var(--primary);">
+        <span class="material-symbols-outlined">add_circle</span>
+        Add dependent
+      </button>
+    </div>
+
+    <form method="post" action="/member/amendment" id="dependent-add-form" style="display: none; margin-bottom: 20px; border: 1px solid rgba(0, 103, 47, 0.16); border-radius: 12px; padding: 16px; background: rgba(0, 103, 47, 0.03);">
+      <input type="hidden" name="DependentAction" value="add">
+      <div class="grid">
+        <div class="col-6 form-group">
+          <label>Dependent Name *</label>
+          <input type="text" name="DependentName" class="form-control dependent-uppercase" placeholder="Last name, first name, middle initial" required>
+        </div>
+        <div class="col-3 form-group">
+          <label>Relationship *</label>
+          <select name="Relationship" class="form-control" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Child">Child</option>
+            <option value="Parent">Parent</option>
+          </select>
+        </div>
+        <div class="col-3 form-group">
+          <label>Birth Date *</label>
+          <input type="date" name="DependentBirthDate" class="form-control" required>
+        </div>
+        <div class="col-6 form-group">
+          <label>Citizenship *</label>
+          <select name="DependentCitizenship" class="form-control" required>
+            <option value="Filipino" selected>Filipino</option>
+            <option value="Foreign National">Foreign National</option>
+            <option value="Dual Citizen">Dual Citizen</option>
+          </select>
+        </div>
+        <div class="col-6 form-group">
+          <label>With PWD? *</label>
+          <select name="DependentPWD" class="form-control" required>
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top: 18px;">
+        <div class="security-badge">
+          <span class="material-symbols-outlined">family_restroom</span>
+          New dependent will be linked to your active PIN.
+        </div>
+        <button type="submit" class="btn-submit">Save dependent</button>
+      </div>
+    </form>
+
+    <div style="display: grid; gap: 14px;">
+      {% for dependent in dependents %}
+      <article style="border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; background: var(--surface);">
+        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;">
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Dependent ID</div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--secondary);">{{ dependent.DependentID }}</div>
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); font-weight: 700;">Linked to PIN {{ dependent.PIN }}</div>
+        </div>
+
+        <form method="post" action="/member/amendment">
+          <input type="hidden" name="DependentAction" value="update">
+          <input type="hidden" name="DependentID" value="{{ dependent.DependentID }}">
+          <div class="grid">
+            <div class="col-6 form-group">
+              <label>Dependent Name *</label>
+              <input type="text" name="DependentName" class="form-control dependent-uppercase" value="{{ dependent.DependentName }}" required>
+            </div>
+            <div class="col-3 form-group">
+              <label>Relationship *</label>
+              <select name="Relationship" class="form-control" required>
+                <option value="Spouse" {% if dependent.Relationship == 'Spouse' %}selected{% endif %}>Spouse</option>
+                <option value="Child" {% if dependent.Relationship == 'Child' %}selected{% endif %}>Child</option>
+                <option value="Parent" {% if dependent.Relationship == 'Parent' %}selected{% endif %}>Parent</option>
+              </select>
+            </div>
+            <div class="col-3 form-group">
+              <label>Birth Date *</label>
+              <input type="date" name="DependentBirthDate" class="form-control" value="{{ dependent.DependentBirthDate }}" required>
+            </div>
+            <div class="col-6 form-group">
+              <label>Citizenship *</label>
+              <select name="DependentCitizenship" class="form-control" required>
+                <option value="Filipino" {% if dependent.DependentCitizenship == 'Filipino' %}selected{% endif %}>Filipino</option>
+                <option value="Foreign National" {% if dependent.DependentCitizenship == 'Foreign National' %}selected{% endif %}>Foreign National</option>
+                <option value="Dual Citizen" {% if dependent.DependentCitizenship == 'Dual Citizen' %}selected{% endif %}>Dual Citizen</option>
+              </select>
+            </div>
+            <div class="col-6 form-group">
+              <label>With PWD? *</label>
+              <select name="DependentPWD" class="form-control" required>
+                <option value="No" {% if dependent.DependentPWD == 'No' %}selected{% endif %}>No</option>
+                <option value="Yes" {% if dependent.DependentPWD == 'Yes' %}selected{% endif %}>Yes</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions" style="margin-top: 18px;">
+            <div class="security-badge">
+              <span class="material-symbols-outlined">edit</span>
+              Update this dependent's information.
+            </div>
+            <button type="submit" class="btn-submit">Save dependent changes</button>
+          </div>
+        </form>
+      </article>
+      {% else %}
+      <div style="text-align: center; color: var(--text-muted); padding: 18px 0; border: 1px dashed var(--border-light); border-radius: 12px; background: rgba(0, 0, 0, 0.015);">
+        No dependents on file yet.
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  function applyUppercase(selector) {
+    document.querySelectorAll(selector).forEach(input => {
+      input.value = String(input.value || '').toUpperCase();
+      input.addEventListener('input', () => {
+        input.value = input.value.toUpperCase();
+      });
+    });
+  }
+
+  function calculateAge(birthDateString) {
+    if (!birthDateString) {
+      return null;
+    }
+
+    const today = new Date();
+    const birthDate = new Date(birthDateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDelta = today.getMonth() - birthDate.getMonth();
+
+    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  function validateChildAge(form) {
+    const relationshipInput = form.querySelector('input[name="Relationship"]');
+    const relationshipSelect = form.querySelector('select[name="Relationship"]');
+    const birthDateInput = form.querySelector('input[name="DependentBirthDate"]');
+
+    if (!relationshipInput || !birthDateInput) {
+      if (!relationshipSelect || !birthDateInput) {
+        return true;
+      }
+    }
+
+    const relationshipValue = (relationshipSelect ? relationshipSelect.value : relationshipInput.value) || '';
+
+    if (relationshipValue.trim().toLowerCase() !== 'child') {
+      return true;
+    }
+
+    const age = calculateAge(birthDateInput.value);
+    if (age === null || age >= 21) {
+      alert('Child dependents must be below 21 years old.');
+      birthDateInput.focus();
+      return false;
+    }
+
+    return true;
+  }
+
+  applyUppercase('input.dependent-uppercase, input[name="DependentName"], input[name="SpouseName"]');
+
+  const toggleButton = document.getElementById('toggle-dependent-form');
+  const dependentForm = document.getElementById('dependent-add-form');
+
+  if (toggleButton && dependentForm) {
+    toggleButton.addEventListener('click', () => {
+      const isVisible = dependentForm.style.display !== 'none';
+      dependentForm.style.display = isVisible ? 'none' : 'block';
+      toggleButton.innerHTML = isVisible
+        ? '<span class="material-symbols-outlined">add_circle</span> Add dependent'
+        : '<span class="material-symbols-outlined">remove_circle</span> Hide dependent form';
+    });
+  }
+
+  document.querySelectorAll('form').forEach(form => {
+    if (form.getAttribute('action') !== '/member/amendment') {
+      return;
+    }
+
+    const dependentAction = (form.querySelector('input[name="DependentAction"]') || {}).value || '';
+    if (!dependentAction) {
+      return;
+    }
+
+    form.addEventListener('submit', (event) => {
+      if (!validateChildAge(form)) {
+        event.preventDefault();
+      }
+    });
+  });
+});
+</script>
 {% endblock %}
