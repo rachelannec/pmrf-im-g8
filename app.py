@@ -179,6 +179,10 @@ def get_admin_manage_data(search_query=None):
 		registrants = []
 		dependents = []
 
+		member_types = conn.execute(
+			"SELECT MemberTypeID, MemberType FROM membership_details ORDER BY MemberTypeID"
+		).fetchall()
+
 		if search_query:
 			search_term = f"%{search_query.strip()}%"
 			registrants = conn.execute(
@@ -216,6 +220,7 @@ def get_admin_manage_data(search_query=None):
 	return {
 		"registrants": [dict(row) for row in registrants],
 		"dependents_by_pin": dependents_by_pin,
+		"member_types": [dict(row) for row in member_types],
 		"search_query": (search_query or "").strip(),
 	}
 

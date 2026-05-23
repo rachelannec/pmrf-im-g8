@@ -141,6 +141,53 @@ if (mobileInput) {
     });
 }
 
+const businessInput = document.getElementById('business_line');
+
+// Auto-format Business Line
+if (businessInput) {
+    businessInput.addEventListener('input', function () {
+        let digits = this.value.replace(/\D/g, '');
+        
+        // Determine area code length and max digits
+        let areaCodeLen = 2;
+        if (digits.startsWith('02')) {
+            areaCodeLen = 2;
+        } else if (digits.startsWith('2')) {
+            areaCodeLen = 1;
+        } else if (digits.startsWith('0')) {
+            areaCodeLen = 3;
+        } else {
+            areaCodeLen = 2;
+        }
+        
+        let isAreaCode2 = (digits.startsWith('02') || digits.startsWith('2'));
+        let subscriberLen = isAreaCode2 ? 8 : 7;
+        let maxLen = areaCodeLen + subscriberLen;
+        
+        digits = digits.slice(0, maxLen);
+        
+        if (digits.length === 0) {
+            this.value = '';
+            return;
+        }
+        
+        let formatted = '(';
+        if (digits.length <= areaCodeLen) {
+            formatted += digits;
+        } else {
+            formatted += digits.slice(0, areaCodeLen) + ') ';
+            let sub = digits.slice(areaCodeLen);
+            let firstPartLen = isAreaCode2 ? 4 : 3;
+            if (sub.length <= firstPartLen) {
+                formatted += sub;
+            } else {
+                formatted += sub.slice(0, firstPartLen) + '-' + sub.slice(firstPartLen);
+            }
+        }
+        this.value = formatted;
+    });
+}
+
 // "Same as mobile number" checkbox logic
 if (sameAsMobileCheckbox) {
     sameAsMobileCheckbox.addEventListener('change', function () {
