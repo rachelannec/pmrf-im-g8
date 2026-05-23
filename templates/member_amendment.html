@@ -123,7 +123,7 @@
         </div>
         <div class="col-4 form-group">
           <label>Business Line</label>
-          <input type="text" name="BusinessLine" id="business_line" class="form-control" value="{{ member.BusinessLine or '' }}" placeholder="(02) 8123-4567" maxlength="14">
+          <input type="text" name="BusinessLine" id="business_line" class="form-control" value="{{ member.BusinessLine or '' }}" placeholder="(02) XXXX-XXXX or (0XX) XXX-XXXX" maxlength="14">
         </div>
         <div class="col-12 form-group">
           <label>E-mail Address *</label>
@@ -331,6 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let digits = String(value || '').replace(/\D/g, '');
     
     // Determine area code length and max digits
+    // (02) XXXX-XXXX for around metro manila
+    // (0XX) XXX-XXXX for other provinces
     let areaCodeLen = 2;
     if (digits.startsWith('02')) {
       areaCodeLen = 2;
