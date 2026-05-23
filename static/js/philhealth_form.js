@@ -1,3 +1,14 @@
+window.addEventListener('error', function(e) {
+    const messages = document.getElementById('messages') || document.getElementById('manage-message');
+    if (messages) {
+        messages.innerHTML = `
+            <div class="alert alert-error" style="color: red; background: #fee; border: 1px solid #fda; padding: 10px; margin: 10px 0;">
+                <strong>JS Error:</strong> ${e.message} at ${e.filename}:${e.lineno}:${e.colno}
+            </div>
+        `;
+    }
+});
+
 const form = document.getElementById('phil-form');
 const messages = document.getElementById('messages');
 const permAddress = document.querySelector('textarea[name="PermanentAddress"]');
@@ -51,90 +62,26 @@ const formattedMaxDate = maxDate.toISOString().split('T')[0];
 
 const philsysInput = document.getElementById('philsys_id');
 
-
 // Auto-format PhilSys ID as XXXX-XXXX-XXXX-XXXX
 if (philsysInput) {
-    philsysInput.addEventListener('input', function (e) {
-        // 1. Strip out anything that isn't a number
-        let rawValue = this.value.replace(/\D/g, '');
-        
-        // 2. Limit to exactly 16 digits
-        if (rawValue.length > 16) {
-            rawValue = rawValue.substring(0, 16);
-        }
-        
-        // 3. Add a hyphen after every 4th digit
-        let formattedValue = '';
-        for (let i = 0; i < rawValue.length; i++) {
-            if (i > 0 && i % 4 === 0) {
-                formattedValue += '-';
-            }
-            formattedValue += rawValue[i];
-        }
-        
-        // 4. Update the input box
-        this.value = formattedValue;
-    });
+    bindFormatter('#philsys_id', formatPhilsysId);
 }
 
 const tinInput = document.getElementById('tin_id');
 
 // Auto-format TIN as XXX-XXX-XXX or XXX-XXX-XXX-XXX
 if (tinInput) {
-    tinInput.addEventListener('input', function (e) {
-        // 1. Strip out anything that isn't a number
-        let rawValue = this.value.replace(/\D/g, '');
-        
-        // 2. Limit to exactly 12 digits max
-        if (rawValue.length > 12) {
-            rawValue = rawValue.substring(0, 12);
-        }
-        
-        // 3. Add a hyphen after every 3rd digit
-        let formattedValue = '';
-        for (let i = 0; i < rawValue.length; i++) {
-            if (i > 0 && i % 3 === 0) {
-                formattedValue += '-';
-            }
-            formattedValue += rawValue[i];
-        }
-        
-        // 4. Update the input box
-        this.value = formattedValue;
-    });
+    bindFormatter('#tin_id', formatTin);
 }
 
 const mobileInput = document.getElementById('mobile_phone');
 const homeInput = document.getElementById('home_phone');
 const sameAsMobileCheckbox = document.getElementById('same_as_mobile');
 
-// Auto-format Mobile Number
+// Auto-format Mobile & Home Numbers
 if (mobileInput) {
+    bindFormatter('#mobile_phone, #home_phone', formatMobileNumber);
     mobileInput.addEventListener('input', function () {
-        // 1. Strip out anything that isn't a number
-        let numbers = this.value.replace(/\D/g, '');
-        
-        // 2. Remove leading 63 or 0 so we just deal with the 10-digit number
-        if (numbers.startsWith('63')) numbers = numbers.substring(2);
-        if (numbers.startsWith('0')) numbers = numbers.substring(1);
-        
-        // 3. Limit to 10 digits total
-        if (numbers.length > 10) {
-            numbers = numbers.substring(0, 10);
-        }
-        
-        // 4. Build the +63-9XX-XXX-XXXX format
-        let formattedValue = '';
-        if (numbers.length > 0) {
-            formattedValue = '+63';
-            if (numbers.length > 0) formattedValue += '-' + numbers.substring(0, 3);
-            if (numbers.length > 3) formattedValue += '-' + numbers.substring(3, 6);
-            if (numbers.length > 6) formattedValue += '-' + numbers.substring(6, 10);
-        }
-        
-        this.value = formattedValue;
-
-        // 5. If "Same as mobile" is checked, sync the home phone instantly
         if (sameAsMobileCheckbox && sameAsMobileCheckbox.checked) {
             homeInput.value = this.value;
         }
@@ -145,47 +92,7 @@ const businessInput = document.getElementById('business_line');
 
 // Auto-format Business Line
 if (businessInput) {
-    businessInput.addEventListener('input', function () {
-        let digits = this.value.replace(/\D/g, '');
-        
-        // Determine area code length and max digits
-        let areaCodeLen = 2;
-        if (digits.startsWith('02')) {
-            areaCodeLen = 2;
-        } else if (digits.startsWith('2')) {
-            areaCodeLen = 1;
-        } else if (digits.startsWith('0')) {
-            areaCodeLen = 3;
-        } else {
-            areaCodeLen = 2;
-        }
-        
-        let isAreaCode2 = (digits.startsWith('02') || digits.startsWith('2'));
-        let subscriberLen = isAreaCode2 ? 8 : 7;
-        let maxLen = areaCodeLen + subscriberLen;
-        
-        digits = digits.slice(0, maxLen);
-        
-        if (digits.length === 0) {
-            this.value = '';
-            return;
-        }
-        
-        let formatted = '(';
-        if (digits.length <= areaCodeLen) {
-            formatted += digits;
-        } else {
-            formatted += digits.slice(0, areaCodeLen) + ') ';
-            let sub = digits.slice(areaCodeLen);
-            let firstPartLen = isAreaCode2 ? 4 : 3;
-            if (sub.length <= firstPartLen) {
-                formatted += sub;
-            } else {
-                formatted += sub.slice(0, firstPartLen) + '-' + sub.slice(firstPartLen);
-            }
-        }
-        this.value = formatted;
-    });
+    bindFormatter('#business_line', formatBusinessLine);
 }
 
 // "Same as mobile number" checkbox logic
@@ -384,10 +291,28 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMessage();
 
-    // --- YOUR EXISTING VALIDATIONS GO HERE ---
-    // (Age check, Dependent check, PhilSys check, TIN check, Mobile check)
-    // Make sure you keep all those "if" statements you wrote earlier right here!
-    // -----------------------------------------
+    // 1. Validate Member's own age (must be >= 21)
+    if (birthDateInput && birthDateInput.value) {
+        const memberAge = calculateAge(birthDateInput.value);
+        if (memberAge === null || memberAge < 21) {
+            showMessage('error', 'Member must be at least 21 years old.');
+            birthDateInput.focus();
+            return;
+        }
+    }
+
+    // 2. Validate input formats (Mobile, Philsys, TIN, Business Line)
+    if (!validateFormInputs(form)) {
+        return;
+    }
+
+    // 3. Validate Dependent rows (Child must be < 21)
+    const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
+    for (const row of dependentRows) {
+        if (!validateChildAge(row)) {
+            return;
+        }
+    }
 
     updateMemberName();
     updateMailingAddress();
