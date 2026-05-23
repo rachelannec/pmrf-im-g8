@@ -24,8 +24,35 @@
 
   <div id="manage-message"></div>
 
+  <section class="form-card" style="margin-bottom: 20px;">
+    <form method="get" action="/admin/manage" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+      <label class="manage-field" style="flex: 1 1 320px;">
+        Search person
+        <input
+          type="search"
+          name="q"
+          class="form-control"
+          placeholder="Search by PIN, member name, phone, email, dependent name"
+          value="{{ search_query or '' }}"
+          autocomplete="off"
+        >
+      </label>
+      <button type="submit" class="btn-submit" style="background: var(--secondary);">Search</button>
+      {% if search_query %}
+      <a href="/admin/manage" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Clear</a>
+      {% endif %}
+    </form>
+    <div style="margin-top: 10px; color: var(--text-muted); font-size: 13px;">
+      {% if search_query %}
+      Showing results for <strong>{{ search_query }}</strong>. <strong>{{ registrants|length }}</strong> registrant{{ '' if registrants|length == 1 else 's' }} matched.
+      {% else %}
+      Search for a specific person to view only that registrant and their linked dependents.
+      {% endif %}
+    </div>
+  </section>
+
   <section class="form-card">
-    <h2 class="section-title" style="margin-top: 0;">Registrants with Dependents</h2>
+    <h2 class="section-title" style="margin-top: 0;">Registrants with Dependents <span style="font-size: 14px; font-weight: 700; color: var(--text-muted);">({{ registrants|length }} match{{ '' if registrants|length == 1 else 'es' }})</span></h2>
     <div style="display: grid; gap: 18px;">
       {% for row in registrants %}
       <article style="border: 1px solid var(--border-light); border-radius: 14px; padding: 18px; background: var(--surface);">
@@ -241,7 +268,13 @@
         </div>
       </article>
       {% else %}
-      <div style="text-align: center; color: var(--text-muted); padding: 24px 0;">No registrants available.</div>
+      <div style="text-align: center; color: var(--text-muted); padding: 24px 0;">
+        {% if search_query %}
+        No matching records found.
+        {% else %}
+        Use the search box above to load a specific person's record.
+        {% endif %}
+      </div>
       {% endfor %}
     </div>
   </section>
@@ -365,6 +398,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   document.querySelectorAll('form').forEach(form => {
+    const method = (form.getAttribute('method') || 'get').toLowerCase();
+
+    if (method !== 'post') {
+      return;
+    }
+
     form.addEventListener('submit', async function(event) {
       event.preventDefault();
 

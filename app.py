@@ -174,14 +174,41 @@ def get_admin_dashboard_data():
 	}
 
 
-def get_admin_manage_data():
+def get_admin_manage_data(search_query=None):
 	with get_db_connection() as conn:
-		registrants = conn.execute(
-			"SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex, CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress, HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at FROM registrant_details ORDER BY id DESC"
-		).fetchall()
-		dependents = conn.execute(
-			"SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at FROM dependent_details ORDER BY DependentID DESC"
-		).fetchall()
+		registrants = []
+		dependents = []
+
+		if search_query:
+			search_term = f"%{search_query.strip()}%"
+			registrants = conn.execute(
+				"""
+				SELECT PIN, MemberName, MotherMaidenName, SpouseName, BirthDate, BirthPlace, Sex, CivilStatus, Citizenship, PhilSysID, TIN, PermanentAddress, MailingAddress, HomePhone, MobilePhone, BusinessLine, EmailAddress, MemberTypeID, created_at
+				FROM registrant_details
+				WHERE PIN LIKE ?
+				   OR MemberName LIKE ?
+				   OR MotherMaidenName LIKE ?
+				   OR SpouseName LIKE ?
+				   OR MobilePhone LIKE ?
+				   OR EmailAddress LIKE ?
+				   OR EXISTS (
+					SELECT 1
+					FROM dependent_details d
+					WHERE d.PIN = registrant_details.PIN
+					  AND (d.DependentName LIKE ? OR d.Relationship LIKE ?)
+				   )
+				ORDER BY id DESC
+				""",
+				(search_term, search_term, search_term, search_term, search_term, search_term, search_term, search_term),
+			).fetchall()
+
+			pins = [row["PIN"] for row in registrants]
+			if pins:
+				placeholders = ",".join(["?"] * len(pins))
+				dependents = conn.execute(
+					f"SELECT DependentID, PIN, DependentName, Relationship, DependentBirthDate, DependentCitizenship, DependentPWD, created_at FROM dependent_details WHERE PIN IN ({placeholders}) ORDER BY DependentID DESC",
+					pins,
+				).fetchall()
 		dependents_by_pin = {}
 		for dependent in dependents:
 			dependents_by_pin.setdefault(dependent["PIN"], []).append(dict(dependent))
@@ -189,6 +216,7 @@ def get_admin_manage_data():
 	return {
 		"registrants": [dict(row) for row in registrants],
 		"dependents_by_pin": dependents_by_pin,
+		"search_query": (search_query or "").strip(),
 	}
 
 
@@ -255,10 +283,11 @@ def admin_dashboard():
 @admin_required
 def admin_manage():
 	init_db()
+	search_query = request.args.get("q", "").strip()
 	return render_template(
 		"admin_manage.html",
 		admin_user=session.get("admin_user"),
-		**get_admin_manage_data(),
+		**get_admin_manage_data(search_query=search_query),
 	)
 
 
