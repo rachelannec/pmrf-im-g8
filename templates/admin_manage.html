@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
   bindFormatter('input[name="PhilSysID"]', formatPhilsysId);
   bindFormatter('input[name="TIN"]', formatTin);
   bindFormatter('input[name="BusinessLine"]', formatBusinessLine);
-  bindUppercase('input[name="MemberName"], input[name="MotherMaidenName"], input[name="SpouseName"], input[name="DependentName"]');
+  bindNameFormatter('input[name="MemberName"], input[name="MotherMaidenName"], input[name="SpouseName"], input[name="DependentName"]');
   restrictDates();
 
   document.querySelectorAll('[data-add-dependent-toggle]').forEach(button => {

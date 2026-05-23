@@ -551,12 +551,12 @@ def member_login():
 		password = (payload.get("password") or payload.get("Password") or "").strip()
 
 		if not pin or not password:
-			error_message = "Enter both your PhilHealth ID number and password."
+			error_message = "Enter both your PhilHealth ID/Email and password."
 		else:
 			with get_db_connection() as conn:
 				member = conn.execute(
-					"SELECT PIN, MemberPasswordHash FROM registrant_details WHERE PIN = ?",
-					(pin,),
+					"SELECT PIN, MemberPasswordHash FROM registrant_details WHERE PIN = ? OR EmailAddress = ?",
+					(pin, pin),
 				).fetchone()
 			if member and member["MemberPasswordHash"] and check_password_hash(member["MemberPasswordHash"], password):
 				session["member_pin"] = member["PIN"]

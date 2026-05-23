@@ -5,7 +5,7 @@
         <div class="form-header" style="text-align: center;">
             <span class="material-symbols-outlined" style="font-size: 48px; color: var(--primary); margin-bottom: 12px;">account_circle</span>
             <h1>Member Sign In</h1>
-            <p>Sign in with your PhilHealth ID and password to update your details.</p>
+            <p>Sign in with your PhilHealth ID or Email and password to update your details.</p>
         </div>
 
         <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 24px 0;">
@@ -18,8 +18,8 @@
 
         <form method="post" action="/login/member">
             <div class="form-group" style="margin-bottom: 16px;">
-                <label for="member-pin">PhilHealth ID Number (PIN)</label>
-                <input type="text" id="member-pin" name="PIN" class="form-control" placeholder="PH-XXXXXXXXX-X" autocomplete="username" required>
+                <label for="member-pin">PhilHealth ID Number (PIN) or Email Address</label>
+                <input type="text" id="member-pin" name="PIN" class="form-control" placeholder="PIN or email address" autocomplete="username" required>
             </div>
             
             <div class="form-group" style="margin-bottom: 24px;">

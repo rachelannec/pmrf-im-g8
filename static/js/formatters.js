@@ -218,4 +218,26 @@ function validateFormInputs(form) {
     return true;
 }
 
+function formatName(value) {
+    let val = String(value || '').toUpperCase();
+    // Replace comma followed by no space with comma and space
+    val = val.replace(/,(\S)/g, ', $1');
+    // Replace multiple spaces with a single space
+    val = val.replace(/  +/g, ' ');
+    return val;
+}
+
+function bindNameFormatter(selector) {
+    document.querySelectorAll(selector).forEach(input => {
+        input.value = formatName(input.value);
+        input.addEventListener('input', (e) => {
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            e.target.value = formatName(e.target.value);
+            e.target.setSelectionRange(start, end);
+        });
+    });
+}
+
+
 
