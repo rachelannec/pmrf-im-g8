@@ -264,121 +264,6 @@
 </main>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  function applyUppercase(selector) {
-    document.querySelectorAll(selector).forEach(input => {
-      input.value = String(input.value || '').toUpperCase();
-      input.addEventListener('input', (e) => {
-        const start = e.target.selectionStart;
-        const end = e.target.selectionEnd;
-        e.target.value = e.target.value.toUpperCase();
-        e.target.setSelectionRange(start, end);
-      });
-    });
-  }
-
-  function formatMobileNumber(value) {
-    let numbers = String(value || '').replace(/\D/g, '');
-
-    if (numbers.startsWith('63')) {
-      numbers = numbers.slice(2);
-    }
-    if (numbers.startsWith('0')) {
-      numbers = numbers.slice(1);
-    }
-
-    numbers = numbers.slice(0, 10);
-    if (!numbers) {
-      return '';
-    }
-
-    let formatted = '+63';
-    if (numbers.length > 0) formatted += `-${numbers.slice(0, 3)}`;
-    if (numbers.length > 3) formatted += `-${numbers.slice(3, 6)}`;
-    if (numbers.length > 6) formatted += `-${numbers.slice(6, 10)}`;
-
-    return formatted;
-  }
-
-  function formatPhilsysId(value) {
-    let digits = String(value || '').replace(/\D/g, '').slice(0, 16);
-    let formatted = '';
-
-    for (let index = 0; index < digits.length; index += 1) {
-      if (index > 0 && index % 4 === 0) {
-        formatted += '-';
-      }
-      formatted += digits[index];
-    }
-
-    return formatted;
-  }
-
-  function formatTin(value) {
-    let digits = String(value || '').replace(/\D/g, '').slice(0, 12);
-    let formatted = '';
-
-    for (let index = 0; index < digits.length; index += 1) {
-      if (index > 0 && index % 3 === 0) {
-        formatted += '-';
-      }
-      formatted += digits[index];
-    }
-
-    return formatted;
-  }
-
-  function formatBusinessLine(value) {
-    let digits = String(value || '').replace(/\D/g, '');
-    
-    // Determine area code length and max digits
-    // (02) XXXX-XXXX for around metro manila
-    // (0XX) XXX-XXXX for other provinces
-    let areaCodeLen = 2;
-    if (digits.startsWith('02')) {
-      areaCodeLen = 2;
-    } else if (digits.startsWith('2')) {
-      areaCodeLen = 1;
-    } else if (digits.startsWith('0')) {
-      areaCodeLen = 3;
-    } else {
-      areaCodeLen = 2;
-    }
-    
-    let isAreaCode2 = (digits.startsWith('02') || digits.startsWith('2'));
-    let subscriberLen = isAreaCode2 ? 8 : 7;
-    let maxLen = areaCodeLen + subscriberLen;
-    
-    digits = digits.slice(0, maxLen);
-    
-    if (digits.length === 0) {
-      return '';
-    }
-    
-    let formatted = '(';
-    if (digits.length <= areaCodeLen) {
-      formatted += digits;
-    } else {
-      formatted += digits.slice(0, areaCodeLen) + ') ';
-      let sub = digits.slice(areaCodeLen);
-      let firstPartLen = isAreaCode2 ? 4 : 3;
-      if (sub.length <= firstPartLen) {
-        formatted += sub;
-      } else {
-        formatted += sub.slice(0, firstPartLen) + '-' + sub.slice(firstPartLen);
-      }
-    }
-    return formatted;
-  }
-
-  function bindFormatter(selector, formatter) {
-    document.querySelectorAll(selector).forEach(input => {
-      input.value = formatter(input.value);
-      input.addEventListener('input', () => {
-        input.value = formatter(input.value);
-      });
-    });
-  }
-
   function restrictDependentDates() {
     const todayStr = new Date().toISOString().split('T')[0];
     document.querySelectorAll('input[name="DependentBirthDate"]').forEach(input => {
@@ -386,51 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function calculateAge(birthDateString) {
-    if (!birthDateString) {
-      return null;
-    }
+  bindNameFormatter('input.dependent-uppercase, input[name="DependentName"], input[name="SpouseName"]');
 
-    const today = new Date();
-    const birthDate = new Date(birthDateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDelta = today.getMonth() - birthDate.getMonth();
-
-    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
-  }
-
-  function validateChildAge(form) {
-    const relationshipInput = form.querySelector('input[name="Relationship"]');
-    const relationshipSelect = form.querySelector('select[name="Relationship"]');
-    const birthDateInput = form.querySelector('input[name="DependentBirthDate"]');
-
-    if (!relationshipInput || !birthDateInput) {
-      if (!relationshipSelect || !birthDateInput) {
-        return true;
-      }
-    }
-
-    const relationshipValue = (relationshipSelect ? relationshipSelect.value : relationshipInput.value) || '';
-
-    if (relationshipValue.trim().toLowerCase() !== 'child') {
-      return true;
-    }
-
-    const age = calculateAge(birthDateInput.value);
-    if (age === null || age >= 21) {
-      alert('Child dependents must be below 21 years old.');
-      birthDateInput.focus();
-      return false;
-    }
-
-    return true;
-  }
-
-  applyUppercase('input.dependent-uppercase, input[name="DependentName"], input[name="SpouseName"]');
   bindFormatter('#philsys_id', formatPhilsysId);
   bindFormatter('#tin_id', formatTin);
   bindFormatter('#mobile_phone, #home_phone', formatMobileNumber);
@@ -456,13 +298,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const dependentAction = (form.querySelector('input[name="DependentAction"]') || {}).value || '';
-    if (!dependentAction) {
-      return;
-    }
 
     form.addEventListener('submit', (event) => {
-      if (!validateChildAge(form)) {
-        event.preventDefault();
+      if (dependentAction) {
+        if (!validateChildAge(form)) {
+          event.preventDefault();
+        }
+      } else {
+        if (!validateFormInputs(form)) {
+          event.preventDefault();
+        }
       }
     });
   });
