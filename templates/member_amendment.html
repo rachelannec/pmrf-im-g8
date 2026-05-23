@@ -57,9 +57,17 @@
       <div class="grid">
         <div class="col-6 form-group">
           <label>Spouse Name</label>
-          <input type="text" name="SpouseName" class="form-control dependent-uppercase" value="{{ member.SpouseName or '' }}">
+          <input type="text" name="SpouseName" class="form-control dependent-uppercase" value="{{ member.SpouseName or '' }}" placeholder="Last, First, MI">
         </div>
-        <div class="col-3 form-group">
+        <div class="col-6 form-group">
+          <label>Citizenship *</label>
+          <select name="Citizenship" class="form-control" required>
+            <option value="Filipino" {% if member.Citizenship == 'Filipino' %}selected{% endif %}>Filipino</option>
+            <option value="Foreign National" {% if member.Citizenship == 'Foreign National' %}selected{% endif %}>Foreign National</option>
+            <option value="Dual Citizen" {% if member.Citizenship == 'Dual Citizen' %}selected{% endif %}>Dual Citizen</option>
+          </select>
+        </div>
+        <div class="col-6 form-group">
           <label>Civil Status *</label>
           <select name="CivilStatus" class="form-control" required>
             <option value="Single" {% if member.CivilStatus == 'Single' %}selected{% endif %}>Single</option>
@@ -69,7 +77,7 @@
             <option value="Legally Separated" {% if member.CivilStatus == 'Legally Separated' %}selected{% endif %}>Legally Separated</option>
           </select>
         </div>
-        <div class="col-3 form-group">
+        <div class="col-6 form-group">
           <label>Membership Type *</label>
           <select name="MemberTypeID" class="form-control" required>
             {% for item in member_types %}
@@ -79,27 +87,27 @@
         </div>
         <div class="col-6 form-group">
           <label>PhilSys ID</label>
-          <input type="text" name="PhilSysID" class="form-control" value="{{ member.PhilSysID or '' }}" placeholder="XXXX-XXXX-XXXX-XXXX">
+          <input type="text" name="PhilSysID" id="philsys_id" class="form-control" value="{{ member.PhilSysID or '' }}" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
         </div>
         <div class="col-6 form-group">
           <label>TIN</label>
-          <input type="text" name="TIN" class="form-control" value="{{ member.TIN or '' }}" placeholder="XXX-XXX-XXX">
+          <input type="text" name="TIN" id="tin_id" class="form-control" value="{{ member.TIN or '' }}" placeholder="XXX-XXX-XXX-XXX" maxlength="15">
         </div>
         <div class="col-6 form-group">
           <label>Permanent Address *</label>
-          <textarea name="PermanentAddress" class="form-control" rows="3" required>{{ member.PermanentAddress }}</textarea>
+          <textarea name="PermanentAddress" class="form-control" rows="3" placeholder="Unit/Floor, Building, Street, Brgy, City/Municipality, Province, Zip Code" required>{{ member.PermanentAddress }}</textarea>
         </div>
         <div class="col-6 form-group">
           <label>Mailing Address *</label>
-          <textarea name="MailingAddress" class="form-control" rows="3" required>{{ member.MailingAddress }}</textarea>
+          <textarea name="MailingAddress" id="mailing_address" class="form-control" rows="3" placeholder="If different from permanent address" required>{{ member.MailingAddress }}</textarea>
         </div>
         <div class="col-4 form-group">
           <label>Home Phone</label>
-          <input type="text" name="HomePhone" class="form-control" value="{{ member.HomePhone or '' }}">
+          <input type="text" name="HomePhone" id="home_phone" class="form-control" value="{{ member.HomePhone or '' }}" placeholder="Landline or Mobile">
         </div>
         <div class="col-4 form-group">
           <label>Mobile Phone *</label>
-          <input type="text" name="MobilePhone" class="form-control" value="{{ member.MobilePhone }}" required>
+          <input type="text" name="MobilePhone" id="mobile_phone" class="form-control" value="{{ member.MobilePhone }}" placeholder="+63-9XX-XXX-XXXX" maxlength="16" required>
         </div>
         <div class="col-4 form-group">
           <label>Business Line</label>
@@ -107,7 +115,7 @@
         </div>
         <div class="col-12 form-group">
           <label>E-mail Address *</label>
-          <input type="email" name="EmailAddress" class="form-control" value="{{ member.EmailAddress }}" required>
+          <input type="email" name="EmailAddress" class="form-control" value="{{ member.EmailAddress }}" placeholder="example@email.com" required>
         </div>
       </div>
 
@@ -138,7 +146,7 @@
       <div class="grid">
         <div class="col-6 form-group">
           <label>Dependent Name *</label>
-          <input type="text" name="DependentName" class="form-control dependent-uppercase" placeholder="Last name, first name, middle initial" required>
+          <input type="text" name="DependentName" class="form-control dependent-uppercase" placeholder="Last, First, MI" required>
         </div>
         <div class="col-3 form-group">
           <label>Relationship *</label>
@@ -177,7 +185,7 @@
         <button type="submit" class="btn-submit">Save dependent</button>
       </div>
     </form>
-
+ 
     <div style="display: grid; gap: 14px;">
       {% for dependent in dependents %}
       <article style="border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; background: var(--surface);">
@@ -188,14 +196,14 @@
           </div>
           <div style="font-size: 13px; color: var(--text-muted); font-weight: 700;">Linked to PIN {{ dependent.PIN }}</div>
         </div>
-
+ 
         <form method="post" action="/member/amendment">
           <input type="hidden" name="DependentAction" value="update">
           <input type="hidden" name="DependentID" value="{{ dependent.DependentID }}">
           <div class="grid">
             <div class="col-6 form-group">
               <label>Dependent Name *</label>
-              <input type="text" name="DependentName" class="form-control dependent-uppercase" value="{{ dependent.DependentName }}" required>
+              <input type="text" name="DependentName" class="form-control dependent-uppercase" value="{{ dependent.DependentName }}" placeholder="Last, First, MI" required>
             </div>
             <div class="col-3 form-group">
               <label>Relationship *</label>
@@ -247,9 +255,79 @@ document.addEventListener('DOMContentLoaded', function() {
   function applyUppercase(selector) {
     document.querySelectorAll(selector).forEach(input => {
       input.value = String(input.value || '').toUpperCase();
-      input.addEventListener('input', () => {
-        input.value = input.value.toUpperCase();
+      input.addEventListener('input', (e) => {
+        const start = e.target.selectionStart;
+        const end = e.target.selectionEnd;
+        e.target.value = e.target.value.toUpperCase();
+        e.target.setSelectionRange(start, end);
       });
+    });
+  }
+
+  function formatMobileNumber(value) {
+    let numbers = String(value || '').replace(/\D/g, '');
+
+    if (numbers.startsWith('63')) {
+      numbers = numbers.slice(2);
+    }
+    if (numbers.startsWith('0')) {
+      numbers = numbers.slice(1);
+    }
+
+    numbers = numbers.slice(0, 10);
+    if (!numbers) {
+      return '';
+    }
+
+    let formatted = '+63';
+    if (numbers.length > 0) formatted += `-${numbers.slice(0, 3)}`;
+    if (numbers.length > 3) formatted += `-${numbers.slice(3, 6)}`;
+    if (numbers.length > 6) formatted += `-${numbers.slice(6, 10)}`;
+
+    return formatted;
+  }
+
+  function formatPhilsysId(value) {
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 16);
+    let formatted = '';
+
+    for (let index = 0; index < digits.length; index += 1) {
+      if (index > 0 && index % 4 === 0) {
+        formatted += '-';
+      }
+      formatted += digits[index];
+    }
+
+    return formatted;
+  }
+
+  function formatTin(value) {
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 12);
+    let formatted = '';
+
+    for (let index = 0; index < digits.length; index += 1) {
+      if (index > 0 && index % 3 === 0) {
+        formatted += '-';
+      }
+      formatted += digits[index];
+    }
+
+    return formatted;
+  }
+
+  function bindFormatter(selector, formatter) {
+    document.querySelectorAll(selector).forEach(input => {
+      input.value = formatter(input.value);
+      input.addEventListener('input', () => {
+        input.value = formatter(input.value);
+      });
+    });
+  }
+
+  function restrictDependentDates() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[name="DependentBirthDate"]').forEach(input => {
+      input.setAttribute('max', todayStr);
     });
   }
 
@@ -298,6 +376,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   applyUppercase('input.dependent-uppercase, input[name="DependentName"], input[name="SpouseName"]');
+  bindFormatter('#philsys_id', formatPhilsysId);
+  bindFormatter('#tin_id', formatTin);
+  bindFormatter('#mobile_phone, #home_phone', formatMobileNumber);
+  restrictDependentDates();
 
   const toggleButton = document.getElementById('toggle-dependent-form');
   const dependentForm = document.getElementById('dependent-add-form');
