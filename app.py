@@ -540,30 +540,40 @@ def admin_logout():
 
 @app.route("/login/member", methods=["GET", "POST"])
 def member_login():
-	init_db()
-	if session.get("member_pin"):
-		return redirect(url_for("member_amendment"))
+    init_db()
+    if session.get("member_pin"):
+        return redirect(url_for("member_amendment"))
 
-	error_message = None
-	if request.method == "POST":
-		payload = request.get_json(silent=True) or request.form
-		pin = (payload.get("PIN") or payload.get("pin") or "").strip()
-		password = (payload.get("password") or payload.get("Password") or "").strip()
+    error_message = None
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or request.form
+        pin = (payload.get("PIN") or payload.get("pin") or "").strip()
+        password = (payload.get("password") or payload.get("Password") or "").strip()
 
-		if not pin or not password:
-			error_message = "Enter both your PhilHealth ID/Email and password."
-		else:
-			with get_db_connection() as conn:
-				member = conn.execute(
-					"SELECT PIN, MemberPasswordHash FROM registrant_details WHERE PIN = ? OR EmailAddress = ?",
-					(pin, pin),
-				).fetchone()
-			if member and member["MemberPasswordHash"] and check_password_hash(member["MemberPasswordHash"], password):
-				session["member_pin"] = member["PIN"]
-				return redirect(url_for("member_amendment"))
-			error_message = "Invalid PIN or password."
+        if not pin or not password:
+            error_message = "Enter both your PhilHealth ID/Email and password."
+        else:
+            with get_db_connection() as conn:
+                member = conn.execute(
+                    "SELECT PIN, MemberPasswordHash FROM registrant_details WHERE PIN = ? OR EmailAddress = ?",
+                    (pin, pin),
+                ).fetchone()
+            
+            # --- DEBUG LINES PLACED PROPERLY RIGHT AFTER SQL FETCH ---
+            print("--- DEBUG LOGIN ---")
+            print(f"Input PIN/Email: {pin}")
+            print(f"Database Record Found: {dict(member) if member else 'NONE'}")
+            if member:
+                print(f"Stored Hash in DB: {member['MemberPasswordHash']}")
+            # --------------------------------------------------------
 
-	return render_template("member_login.html", error_message=error_message)
+            if member and member["MemberPasswordHash"] and check_password_hash(member["MemberPasswordHash"], password):
+                session["member_pin"] = member["PIN"]
+                return redirect(url_for("member_amendment"))
+            
+            error_message = "Invalid PIN or password."
+
+    return render_template("member_login.html", error_message=error_message)
 
 
 def member_required(view_func):
