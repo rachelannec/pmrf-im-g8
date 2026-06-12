@@ -1,62 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
-<main style="padding-top: 0; max-width: 1240px;">
-  <div class="form-card" style="margin-bottom: 24px;">
-    <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 16px;">
+<main style="padding-top: 0; max-width: 1240px; box-sizing: border-box; width: 100%;">
+  
+  <div class="form-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(224, 242, 254, 0.55) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(37, 93, 173, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.02); padding: 32px; box-sizing: border-box; width: 100%; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 20px;">
       <div>
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-          <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px;">terminal</span>
-          <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">SQL Workbench</span>
+          <span class="material-symbols-outlined" style="color: var(--secondary); font-size: 32px;">terminal</span>
+          <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--secondary); font-weight: 700;">SQL Workbench</span>
         </div>
-        <h1 style="margin-bottom: 10px; color: var(--primary);">Read-only query runner</h1>
-        <p style="max-width: 840px; margin: 0; color: var(--text-main);">Use this panel to inspect data with <strong>SELECT</strong>, <strong>WITH</strong>, <strong>PRAGMA</strong>, or <strong>EXPLAIN</strong> statements. Write operations are blocked.</p>
+        <h1 style="margin: 0 0 10px 0; color: var(--secondary); font-weight: 700; font-size: 28px;">Read-only Query Runner</h1>
+        <p style="max-width: 840px; margin: 0; color: var(--text-main); line-height: 1.5; font-size: 14.5px;">Use this panel to inspect data with <strong>SELECT</strong>, <strong>WITH</strong>, <strong>PRAGMA</strong>, or <strong>EXPLAIN</strong> statements. Write operations are blocked.</p>
       </div>
       <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-        <a href="/admin/dashboard" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+        <a href="/admin/dashboard" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 10px 16px; border-radius: 6px; background: rgba(255, 255, 255, 1); border: 1px solid var(--border-light); color: var(--secondary);">
           <span class="material-symbols-outlined">dashboard</span> Dashboard
         </a>
-        <a href="/admin/logout" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+        <a href="/admin/logout" class="btn-draft" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 10px 16px; border-radius: 6px; background: rgba(255, 255, 255, 1); border: 1px solid var(--border-light); color: var(--secondary);">
           <span class="material-symbols-outlined">logout</span> Logout
         </a>
       </div>
     </div>
 
-    <form id="sql-workbench-form" autocomplete="off">
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label for="sql-query">SQL Query</label>
-        <textarea id="sql-query" class="form-control" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" style="font-family: Consolas, 'Courier New', monospace;">{{ default_query }}</textarea>
+    <form id="sql-workbench-form" autocomplete="off" style="background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+      <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+        <label for="sql-query" style="font-weight: 700; font-size: 13px; color: var(--secondary);">SQL Query</label>
+        <textarea id="sql-query" class="form-control" rows="9" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" style="font-family: Consolas, 'Courier New', monospace; background: #ffffff; border: 1px solid #cbd5e1; padding: 14px; border-radius: 6px; font-size: 14px; color: #0f172a; line-height: 1.5; width: 100%; box-sizing: border-box; resize: vertical;">{{ default_query }}</textarea>
       </div>
 
       <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;">
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--text-muted); font-size: 13px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--text-main); font-size: 13px; font-weight: 500;">
           <span class="material-symbols-outlined" style="font-size: 18px; color: var(--secondary);">database</span>
           {% for table in tables %}
-          <span style="background: var(--surface-alt); border: 1px solid var(--border-light); border-radius: 999px; padding: 6px 10px;">{{ table }}</span>
+          <span style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; padding: 5px 12px; color: var(--text-main);">{{ table }}</span>
           {% endfor %}
         </div>
-        <button type="submit" class="btn-submit" style="min-width: 160px; background: var(--secondary);">Run Query</button>
+        <button type="submit" class="btn-submit" style="min-width: 160px; background: var(--secondary); color: #ffffff; padding: 11px 22px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Run Query</button>
       </div>
     </form>
   </div>
 
   <div id="workbench-message"></div>
 
-  <section class="form-card">
-    <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px;">
-      <h2 class="section-title" style="margin: 0; border-left-color: var(--secondary);">Query Results</h2>
-      <div id="result-summary" style="color: var(--text-muted); font-weight: 600;">No query run yet.</div>
+  <section class="form-card" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(224, 242, 254, 0.55) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(37, 93, 173, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.02); box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+      <h2 class="section-title" style="margin: 0; border-left-color: var(--secondary); color: var(--text-main); font-weight: 700;">Query Results</h2>
+      <div id="result-summary" style="color: var(--text-main); font-weight: 700; font-size: 14px; background: #ffffff; padding: 4px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">No query run yet.</div>
     </div>
-    <div class="table-container" id="results-container">
-      <table>
+    
+    <div class="table-container" id="results-container" style="border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <table style="width: 100%; border-collapse: collapse; background: #ffffff;">
         <thead>
-          <tr>
-            <th>Status</th>
-            <th>Message</th>
+          <tr style="background: #ffffff; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 12px; color: var(--text-main); font-weight: 700; border: 1px solid #e2e8f0; text-align: left;">Status</th>
+            <th style="padding: 12px; color: var(--text-main); font-weight: 700; border: 1px solid #e2e8f0; text-align: left;">Message</th>
           </tr>
         </thead>
         <tbody id="results-body">
-          <tr>
-            <td colspan="2" style="text-align: center; color: var(--text-muted);">Run a query to view results.</td>
+          <tr style="background: #ffffff;">
+            <td colspan="2" style="text-align: center; color: var(--text-main); padding: 24px; border: 1px solid #e2e8f0;">Run a query to view results.</td>
           </tr>
         </tbody>
       </table>
@@ -91,19 +93,43 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
   }
 
+  // FIXED: Injected layout rules inside script generator to keep rows crisp white with borders
   function renderResults(columns, rows) {
     if (!columns.length) {
-      resultsBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Query completed with no tabular result.</td></tr>';
+      resultsTable.innerHTML = `
+        <thead>
+          <tr style="background: #ffffff; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 12px; color: var(--text-main); font-weight: 700; border: 1px solid #e2e8f0; text-align: left;">Status</th>
+            <th style="padding: 12px; color: var(--text-main); font-weight: 700; border: 1px solid #e2e8f0; text-align: left;">Message</th>
+          </tr>
+        </thead>
+        <tbody id="results-body">
+          <tr style="background: #ffffff;">
+            <td colspan="2" style="text-align: center; color: var(--text-main); padding: 24px; border: 1px solid #e2e8f0;">Query completed with no tabular result.</td>
+          </tr>
+        </tbody>`;
       return;
     }
 
-    const headCells = columns.map(column => `<th>${escapeHtml(column)}</th>`).join('');
+    const headCells = columns.map(column => 
+      `<th style="padding: 12px; color: var(--text-main); font-weight: 700; border: 1px solid #e2e8f0; background: #ffffff; text-align: left;">${escapeHtml(column)}</th>`
+    ).join('');
+    
     const bodyRows = rows.length ? rows.map(row => {
-      const cells = columns.map(column => `<td>${escapeHtml(row[column] ?? '')}</td>`).join('');
-      return `<tr>${cells}</tr>`;
-    }).join('') : `<tr><td colspan="${columns.length}" style="text-align: center; color: var(--text-muted);">Query returned no rows.</td></tr>`;
+      const cells = columns.map(column => 
+        `<td style="padding: 12px; border: 1px solid #e2e8f0; color: var(--text-main);">${escapeHtml(row[column] ?? '')}</td>`
+      ).join('');
+      return `<tr style="background: #ffffff; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">${cells}</tr>`;
+    }).join('') : `
+      <tr style="background: #ffffff;">
+        <td colspan="${columns.length}" style="text-align: center; color: var(--text-main); padding: 24px; border: 1px solid #e2e8f0;">Query returned no rows.</td>
+      </tr>`;
 
-    resultsTable.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody id="results-body">${bodyRows}</tbody>`;
+    resultsTable.innerHTML = `
+      <thead>
+        <tr style="background: #ffffff; border-bottom: 2px solid #e2e8f0;">${headCells}</tr>
+      </thead>
+      <tbody id="results-body">${bodyRows}</tbody>`;
     resultsBody = document.getElementById('results-body');
   }
 

@@ -601,7 +601,7 @@
       </div>
 
       <div style="display: flex; flex-direction: column; padding: 20px 0">
-        {% if session.get('admin_user') %}
+ {% if session.get('admin_user') %}
         <a
           href="/admin/dashboard"
           class="sidebar-link"
@@ -621,7 +621,7 @@
         >
           <span
             class="material-symbols-outlined"
-            style="color: var(--secondary)"
+            style="color: var(--text-muted)"
             >dashboard</span
           >
           Admin Dashboard
@@ -643,7 +643,7 @@
               color 0.2s;
           "
         >
-          <span class="material-symbols-outlined" style="color: var(--primary)"
+          <span class="material-symbols-outlined" style="color: var(--text-muted)"
             >terminal</span
           >
           SQL Workbench
@@ -667,7 +667,7 @@
         >
           <span
             class="material-symbols-outlined"
-            style="color: var(--secondary)"
+            style="color: var(--text-muted)"
             >edit</span
           >
           Manage Records
