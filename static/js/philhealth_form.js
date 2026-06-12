@@ -136,7 +136,11 @@ function clearMessage() {
 }
 
 function generatePin() {
-    return `PH-${Math.floor(Math.random() * 1_000_000_000).toString().padStart(9, '0')}-${Math.floor(Math.random() * 10)}`;
+    // Produce format: XX-XXXXXXXXX-X (2-9-1)
+    const left = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+    const middle = Math.floor(Math.random() * 1_000_000_000).toString().padStart(9, '0');
+    const right = Math.floor(Math.random() * 10).toString();
+    return `${left}-${middle}-${right}`;
 }
 
 function updateMailingAddress() {
