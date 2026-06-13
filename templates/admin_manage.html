@@ -245,7 +245,7 @@
               <form method="post" action="/admin/dependents/{{ dep.DependentID }}/update" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
                 <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--secondary);">
                   PIN
-                  <input type="text" name="PIN" class="form-control" value="{{ dep.PIN }}" required style="background: #ffffff; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px;">
+                  <input type="text" name="PIN" class="form-control" value="{{ dep.PIN }}" required readonly style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; cursor: not-allowed;">
                 </label>
                 <label style="display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--secondary);">
                   Dependent name *
@@ -306,6 +306,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const messageBox = document.getElementById('manage-message');
+  const flashMessageKey = 'adminManageFlashMessage';
 
   function restrictDates() {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -320,6 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
   bindFormatter('input[name="BusinessLine"]', formatBusinessLine);
   bindNameFormatter('input[name="MemberName"], input[name="MotherMaidenName"], input[name="SpouseName"], input[name="DependentName"]');
   restrictDates();
+
+  const pendingFlashMessage = sessionStorage.getItem(flashMessageKey);
+  if (pendingFlashMessage) {
+    sessionStorage.removeItem(flashMessageKey);
+    showMessage('success', pendingFlashMessage);
+  }
 
   document.querySelectorAll('[data-add-dependent-toggle]').forEach(button => {
     const targetId = button.getAttribute('data-add-dependent-toggle');
@@ -398,6 +405,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
       try {
         const data = await postForm(form);
+        const isAddDependent = actionPath === '/dependents' || actionPath.endsWith('/dependents');
+
+        if (isUpdate || isAddDependent) {
+          sessionStorage.setItem(flashMessageKey, data.message || 'Update saved successfully.');
+          window.setTimeout(() => window.location.reload(), 800);
+          return;
+        }
+
         showMessage('success', data.message || 'Saved.');
       } catch (error) {
         showMessage('error', error.message);
