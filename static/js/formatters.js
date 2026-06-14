@@ -132,34 +132,45 @@ function calculateAge(birthDateString) {
     return age;
 }
 
-function validateChildAge(form) {
-    console.log("validateChildAge called on:", form);
+function validateDependentAge(form) {
+    console.log("validateDependentAge called on:", form);
     const relationshipInput = form.querySelector('input[name="Relationship"]');
     const relationshipSelect = form.querySelector('select[name="Relationship"]');
     const birthDateInput = form.querySelector('input[name="DependentBirthDate"]');
+    const pwdInput = form.querySelector('input[name="DependentPWD"]');
+    const pwdSelect = form.querySelector('select[name="DependentPWD"]');
 
-    console.log("Inputs found:", { relationshipInput, relationshipSelect, birthDateInput });
+    console.log("Inputs found:", { relationshipInput, relationshipSelect, birthDateInput, pwdInput, pwdSelect });
 
-    if (!relationshipInput && !relationshipSelect) {
-        return true;
-    }
-    if (!birthDateInput) {
-        return true;
-    }
+    if (!relationshipInput && !relationshipSelect) return true;
+    if (!birthDateInput) return true;
 
     const relationshipValue = (relationshipSelect ? relationshipSelect.value : (relationshipInput ? relationshipInput.value : '')) || '';
-    console.log("Relationship value:", relationshipValue);
+    const pwdValue = (pwdSelect ? pwdSelect.value : (pwdInput ? pwdInput.value : 'No')) || 'No';
+    console.log("Relationship value:", relationshipValue, "PWD value:", pwdValue);
 
-    if (relationshipValue.trim().toLowerCase() !== 'child') {
+    if (pwdValue.trim().toLowerCase() === 'yes') {
         return true;
     }
 
-    const age = calculateAge(birthDateInput.value);
-    console.log("Calculated child age:", age);
-    if (age === null || age >= 21) {
-        alert('Child dependents must be below 21 years old.');
-        birthDateInput.focus();
-        return false;
+    const rel = relationshipValue.trim().toLowerCase();
+    
+    if (rel === 'child') {
+        const age = calculateAge(birthDateInput.value);
+        console.log("Calculated child age:", age);
+        if (age === null || age >= 21) {
+            alert('Child dependents must be below 21 years old (unless PWD).');
+            birthDateInput.focus();
+            return false;
+        }
+    } else if (rel === 'parent') {
+        const age = calculateAge(birthDateInput.value);
+        console.log("Calculated parent age:", age);
+        if (age === null || age < 60) {
+            alert('Parent dependents must be 60 years old and above (unless PWD).');
+            birthDateInput.focus();
+            return false;
+        }
     }
 
     return true;
