@@ -310,10 +310,10 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-    // 3. Validate Dependent rows (Child must be < 21)
+    // 3. Validate Dependent rows (Child must be < 21, Parent >= 60, unless PWD)
     const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
     for (const row of dependentRows) {
-        if (!validateChildAge(row)) {
+        if (!validateDependentAge(row)) {
             return;
         }
     }
@@ -362,12 +362,11 @@ form.addEventListener('submit', async (e) => {
 btnEdit.addEventListener('click', () => {
     reviewModal.classList.remove('show');
     
-    // --- ADD THIS: Revert Progress Bar back to "Form Entry" ---
+    // Revert Progress Bar back to "Form Entry"
     if (steps.length > 1) {
         steps[1].classList.remove('active');
         steps[0].classList.add('active');
     }
-    // ----------------------------------------------------------
 });
 
 // 3. Save to Database if they click "Confirm & Submit"

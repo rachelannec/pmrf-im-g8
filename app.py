@@ -652,19 +652,33 @@ def member_amendment():
 			dependent_citizenship = (request.form.get("DependentCitizenship") or "").strip()
 			dependent_pwd = (request.form.get("DependentPWD") or "No").strip() or "No"
 
-			if relationship.lower() == "child":
-				child_age = calculate_age(dependent_birth_date)
-				if child_age is None or child_age >= 21:
-					message = "Child dependents must be below 21 years old."
-					message_type = "error"
-					return render_template(
-						"member_amendment.html",
-						member=dict(member),
-						member_types=[dict(row) for row in member_types],
-						dependents=[dict(row) for row in dependents],
-						message=message,
-						message_type=message_type,
-					)
+			if dependent_pwd.lower() != "yes":
+				if relationship.lower() == "child":
+					child_age = calculate_age(dependent_birth_date)
+					if child_age is None or child_age >= 21:
+						message = "Child dependents must be below 21 years old (unless PWD)."
+						message_type = "error"
+						return render_template(
+							"member_amendment.html",
+							member=dict(member),
+							member_types=[dict(row) for row in member_types],
+							dependents=[dict(row) for row in dependents],
+							message=message,
+							message_type=message_type,
+						)
+				elif relationship.lower() == "parent":
+					parent_age = calculate_age(dependent_birth_date)
+					if parent_age is None or parent_age < 60:
+						message = "Parent dependents must be 60 years old and above (unless PWD)."
+						message_type = "error"
+						return render_template(
+							"member_amendment.html",
+							member=dict(member),
+							member_types=[dict(row) for row in member_types],
+							dependents=[dict(row) for row in dependents],
+							message=message,
+							message_type=message_type,
+						)
 
 			if not all([dependent_name, relationship, dependent_birth_date, dependent_citizenship]):
 				message = "Missing required fields for the dependent update."
