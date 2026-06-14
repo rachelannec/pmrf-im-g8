@@ -90,7 +90,12 @@
 
       <div class="col-3 form-group">
         <label>Spouse Name (if Married)</label>
-        <input type="text" name="SpouseName" class="form-control" placeholder="Last, First, MI" />
+        <input
+          type="text"
+          name="SpouseName"
+          class="form-control"
+          placeholder="Last, First, MI"
+        />
       </div>
 
       <!-- Spacer -->
@@ -101,7 +106,7 @@
           type="text"
           name="MotherMaidenName"
           class="form-control"
-          placeholder="Last, First, MI" 
+          placeholder="Last, First, MI"
           required
         />
       </div>
@@ -243,7 +248,14 @@
 
         <div class="col-6 form-group">
           <label>Business Line</label>
-          <input type="tel" name="BusinessLine" id="business_line" class="form-control" placeholder="(02) XXXX-XXXX or (0XX) XXX-XXXX" maxlength="14" />
+          <input
+            type="tel"
+            name="BusinessLine"
+            id="business_line"
+            class="form-control"
+            placeholder="(02) XXXX-XXXX or (0XX) XXX-XXXX"
+            maxlength="14"
+          />
         </div>
         <div class="col-12 form-group">
           <label>E-mail Address *</label>
@@ -264,7 +276,13 @@
             placeholder="Create a password for future member login"
             required
           />
-          <span class="help-text">Use this password to sign in and update your PhilHealth details later.</span>
+          <span class="help-text"
+            >Use this password to sign in and update your PhilHealth details
+            later.
+            <strong style="color: #c00d0d; display: block; margin-top: 3px">
+              Password must be between 8 and 24 characters long.
+            </strong>
+          </span>
         </div>
       </div>
     </div>

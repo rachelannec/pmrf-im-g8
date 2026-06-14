@@ -305,12 +305,38 @@ form.addEventListener('submit', async (e) => {
         }
     }
 
-    // 2. Validate input formats (Mobile, Philsys, TIN, Business Line)
+    // 2. Password Length Validation Constraint
+  const passwordField = form.querySelector('input[name="MemberPassword"]');
+    if (passwordField) {
+        const passwordLength = passwordField.value.length;
+        
+        if (passwordLength < 8 || passwordLength > 24) {
+            passwordField.setCustomValidity("");
+
+            passwordField.setCustomValidity(
+                `Password length constraint violation. Your password is currently ${passwordLength} characters long. It must be between 8 and 24 characters.`
+            );
+            passwordField.reportValidity();
+            
+            passwordField.addEventListener('input', function clearValidity() {
+                passwordField.setCustomValidity(""); // Resets the input back to valid state
+                passwordField.removeEventListener('input', clearValidity); // Removes this listener immediately
+            });
+            
+            passwordField.focus();
+            return; // Hard stops execution and hides the review modal backdrop
+        } else {
+            // Re-maximize validity if the check is perfectly satisfied
+            passwordField.setCustomValidity("");
+        }
+    }
+
+    // 3. Validate input formats (Mobile, Philsys, TIN, Business Line)
     if (!validateFormInputs(form)) {
         return;
     }
 
-    // 3. Validate Dependent rows (Child must be < 21)
+    // 4. Validate Dependent rows (Child must be < 21)
     const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
     for (const row of dependentRows) {
         if (!validateChildAge(row)) {
@@ -341,7 +367,7 @@ form.addEventListener('submit', async (e) => {
 
         // Friendly label: keep 'PIN' uppercase, otherwise split camelCase
         let readableKey = key === 'PIN' ? 'PIN' : key.replace(/([A-Z])/g, ' $1').trim();
-        const displayValue = key === 'MemberPassword' ? '••••••••' : value;
+       const displayValue = key === 'MemberPassword' ? '•'.repeat(value.length) : value;
         summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${displayValue}</div>`;
     }
     
