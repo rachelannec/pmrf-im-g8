@@ -147,14 +147,31 @@ function generatePin() {
 function validateDependentAge(row) {
     const rel = row.querySelector('select[name="Relationship"]').value;
     const dob = row.querySelector('input[name="DependentBirthDate"]').value;
-    if (!dob) return true;
+    const isPWD = row.querySelector('select[name="DependentPWD"]').value === 'Yes';
+    
+    if (!dob) return true; // If they haven't filled a date yet, let standard HTML validation catch it
     
     const age = calculateAge(dob);
-    if (rel === 'Child' && age >= 21) {
-        showMessage('error', 'Dependent Child must be below 21 years old.');
-        return false;
+
+    // Rule 1: Children must be below 21 years old, unless they have a disability
+    if (rel === 'Child') {
+        if (age >= 21 && !isPWD) {
+            showMessage('error', `Validation Error: Dependent Child must be below 21 years old. (Current entry is ${age} years old). Over-aged children are only valid if declared with a disability (PWD).`);
+            row.querySelector('input[name="DependentBirthDate"]').focus();
+            return false;
+        }
     }
-    return true;
+
+    // Rule 2: Parents must be 60 years old and above, unless they have a disability
+    if (rel === 'Parent') {
+        if (age < 60 && !isPWD) {
+            showMessage('error', `Validation Error: Dependent Parent must be 60 years old or above. (Current entry is ${age} years old). Under-aged parents are only valid if declared with a disability (PWD).`);
+            row.querySelector('input[name="DependentBirthDate"]').focus();
+            return false;
+        }
+    }
+
+    return true; // Pass validation cleanly
 }
 
 function updateMailingAddress() {
