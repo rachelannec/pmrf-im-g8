@@ -143,6 +143,20 @@ function generatePin() {
     return `${left}-${middle}-${right}`;
 }
 
+// Fixed function mapping to match your team's custom verification requirements
+function validateDependentAge(row) {
+    const rel = row.querySelector('select[name="Relationship"]').value;
+    const dob = row.querySelector('input[name="DependentBirthDate"]').value;
+    if (!dob) return true;
+    
+    const age = calculateAge(dob);
+    if (rel === 'Child' && age >= 21) {
+        showMessage('error', 'Dependent Child must be below 21 years old.');
+        return false;
+    }
+    return true;
+}
+
 function updateMailingAddress() {
     if (sameAddress.checked) {
         mailAddress.value = permAddress.value;
@@ -306,7 +320,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     // 2. Password Length Validation Constraint
-  const passwordField = form.querySelector('input[name="MemberPassword"]');
+    const passwordField = form.querySelector('input[name="MemberPassword"]');
     if (passwordField) {
         const passwordLength = passwordField.value.length;
         
@@ -336,11 +350,7 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-<<<<<<< HEAD
-    // 4. Validate Dependent rows (Child must be < 21)
-=======
     // 3. Validate Dependent rows (Child must be < 21, Parent >= 60, unless PWD)
->>>>>>> 43719132bf9a9fae8be3544465fbb18fc13dc8fb
     const dependentRows = Array.from(dependentsContainer.querySelectorAll('.dependent-row'));
     for (const row of dependentRows) {
         if (!validateDependentAge(row)) {
@@ -371,7 +381,7 @@ form.addEventListener('submit', async (e) => {
 
         // Friendly label: keep 'PIN' uppercase, otherwise split camelCase
         let readableKey = key === 'PIN' ? 'PIN' : key.replace(/([A-Z])/g, ' $1').trim();
-       const displayValue = key === 'MemberPassword' ? '•'.repeat(value.length) : value;
+        const displayValue = key === 'MemberPassword' ? '•'.repeat(value.length) : value;
         summaryHTML += `<div class="review-item"><strong>${readableKey}:</strong> ${displayValue}</div>`;
     }
     
