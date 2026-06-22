@@ -393,8 +393,8 @@ form.addEventListener('submit', async (e) => {
     // Generate the HTML for the Review Modal dynamically
     let summaryHTML = '';
     for (let [key, value] of pendingFormData.entries()) {
-        // Skip empty fields and exclude the Suffix (already in MemberName)
-        if (!value || key === 'Suffix') continue;
+        // Skip empty fields and exclude fields that should not appear in review
+        if (!value || key === 'Suffix' || key === 'PIN') continue;
 
         // Friendly label: keep 'PIN' uppercase, otherwise split camelCase
         let readableKey = key === 'PIN' ? 'PIN' : key.replace(/([A-Z])/g, ' $1').trim();
